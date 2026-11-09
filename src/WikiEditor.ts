@@ -44,7 +44,7 @@ export class WikiEditor implements EditorHost {
 		this.language = options.language || 'en';
 		this.direction = options.direction || (/^(ar|arc|ary|arz|azb|bcc|bgn|ckb|fa|he|ks|lki|lrc|mzn|nqo|pnb|ps|sd|sdh|skr-arab|ug|ur|yi)(-|$)/i.test(this.language) ? 'rtl' : 'ltr');
 		this.magicWords = {
-			redirect: 'REDIRECT', thumbnail: 'thumb', left: 'left', center: 'center',
+			redirect: '#REDIRECT', thumbnail: 'thumb', left: 'left', center: 'center',
 			right: 'right', none: 'none', frame: 'frame', frameless: 'frameless', alt: 'alt',
 			...options.magicWords,
 		};
@@ -64,19 +64,6 @@ export class WikiEditor implements EditorHost {
 		this.element.append(this.toolbar.element, textarea);
 		this.dialogs = new DialogManager(this);
 		this.listen(textarea, 'input', () => this.changed());
-		this.listen(textarea, 'keydown', (event) => {
-			const keyEvent = event as KeyboardEvent;
-			if (!(keyEvent.ctrlKey || keyEvent.metaKey) || keyEvent.altKey || keyEvent.isComposing)
-				return;
-			if (textarea.disabled || textarea.readOnly)
-				return;
-			const key = keyEvent.key.toLowerCase();
-			if (key === 'b' || key === 'i') {
-				keyEvent.preventDefault();
-				const marks = key === 'b' ? "'''" : "''";
-				this.encapsulate({pre: marks, post: marks, peri: this.msg(`wikieditor-toolbar-tool-${key === 'b' ? 'bold' : 'italic'}-example`)});
-			}
-		});
 		if (options.resizable !== false)
 			this.createResizer();
 		if (options.services?.renderPreview)
@@ -152,7 +139,7 @@ export class WikiEditor implements EditorHost {
 		let {start, end} = this.getSelection();
 		const value = this.getValue();
 		if (options.ownline) {
-			start = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+			start = start === 0 ? 0 : value.lastIndexOf('\n', start - 1) + 1;
 			const next = value.indexOf('\n', end);
 			end = next === -1 ? value.length : next;
 		}
@@ -224,6 +211,8 @@ export class WikiEditor implements EditorHost {
 		if (!Number.isSafeInteger(rows) || !Number.isSafeInteger(columns) || rows < 1 || columns < 1)
 			throw new Error(this.msg('wikieditor-toolbar-tool-table-invalidnumber'));
 		const limit = this.options.maxTableCells ?? 10000;
+		if (!Number.isSafeInteger(limit) || limit < 1)
+			throw new Error('maxTableCells must be a positive safe integer.');
 		if (rows * columns + (options.header ? columns : 0) > limit)
 			throw new Error(this.msg('wikieditor-toolbar-tool-table-toomany', limit));
 		const classes = [options.wikitable ? 'wikitable' : '', options.sortable ? 'sortable' : ''].filter(Boolean);
@@ -231,7 +220,7 @@ export class WikiEditor implements EditorHost {
 		if (options.caption)
 			lines.push(`|+ ${options.caption}`);
 		if (options.header)
-			lines.push(Array.from({length: columns}, () => `! ${this.msg('wikieditor-toolbar-tool-table-example-header')}`).join(' !! ').replace(/ !! ! /g, ' !! '));
+			lines.push(`! ${Array.from({length: columns}, () => this.msg('wikieditor-toolbar-tool-table-example-header')).join(' !! ')}`);
 		for (let row = 0; row < rows; row++) {
 			lines.push('|-');
 			lines.push(`| ${Array.from({length: columns}, () => this.msg('wikieditor-toolbar-tool-table-example-cell-text')).join(' || ')}`);
@@ -271,15 +260,7 @@ export class WikiEditor implements EditorHost {
 		let text = replacement;
 		if (options.regex) {
 			// Let the engine expand captures using the full input (including lookarounds).
-			let replaced = false;
-			const replacedValue = value.replace(pattern, (...args: unknown[]) => {
-				const offset = typeof args[args.length - 2] === 'number' ? args[args.length - 2] : args[args.length - 3];
-				if (offset !== start || replaced)
-					return String(args[0]);
-				replaced = true;
-				return this.expandReplacement(replacement, match, value);
-			});
-			text = replacedValue.slice(start, replacedValue.length - (value.length - end));
+			text = this.expandReplacement(replacement, match, value);
 		}
 		this.selection.replace(text);
 		this.emitInput();

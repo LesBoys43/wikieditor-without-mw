@@ -381,7 +381,7 @@ export class Toolbar {
 	}
 
 	private onHotkey(event: KeyboardEvent): void {
-		if (event.isComposing || event.altKey || !(event.ctrlKey || event.metaKey) || event.shiftKey) return;
+		if (this.host.textarea.disabled || this.host.textarea.readOnly || event.defaultPrevented || event.isComposing || event.altKey || !(event.ctrlKey || event.metaKey) || event.shiftKey) return;
 		for (const { definition } of this.tools.values()) {
 			if (definition.hotkey && definition.hotkey.toLowerCase() === event.key.toLowerCase()) {
 				event.preventDefault();
