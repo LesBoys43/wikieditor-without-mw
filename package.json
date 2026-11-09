@@ -22,7 +22,6 @@
   "files": [
     "package.json",
     "dist",
-    "src",
     "i18n",
     "COPYING",
     "NOTICE.md",

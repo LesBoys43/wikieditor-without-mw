@@ -15,7 +15,6 @@
   "files": [
     "package.json",
     "dist",
-    "src",
     "COPYING",
     "NOTICE.md",
     "README.md",
