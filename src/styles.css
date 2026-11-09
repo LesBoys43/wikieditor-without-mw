@@ -1,0 +1,264 @@
+/* Standalone 2010-style chrome. Every selector is scoped to an editor root. */
+.wikiEditor {
+	--wikiEditor-border: #a2a9b1;
+	--wikiEditor-muted-border: #c8ccd1;
+	--wikiEditor-blue: #36c;
+	box-sizing: border-box;
+	min-inline-size: 0;
+	color: #202122;
+	background: #fff;
+	font-family: sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+	text-align: start;
+}
+.wikiEditor *, .wikiEditor *::before, .wikiEditor *::after { box-sizing: border-box; }
+.wikiEditor [hidden] { display: none !important; }
+.wikiEditor .wikiEditor-toolbar {
+	position: relative;
+	border: 1px solid var(--wikiEditor-border);
+	border-block-end: 0;
+	background: #f8f9fa;
+	box-shadow: inset 0 1px 0 #fff;
+}
+.wikiEditor .wikiEditor-toolbar-top {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0 12px;
+	min-block-size: 36px;
+	padding: 2px 5px;
+	background: linear-gradient(#fff, #eaecf0);
+}
+.wikiEditor .wikiEditor-main, .wikiEditor .wikiEditor-tabs,
+.wikiEditor .wikiEditor-tool-group, .wikiEditor .wikiEditor-panel-advanced {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+}
+.wikiEditor .wikiEditor-main { min-inline-size: 0; }
+.wikiEditor .wikiEditor-tabs { margin-inline-start: auto; align-self: stretch; }
+.wikiEditor .wikiEditor-tool-group { padding-inline: 4px; }
+.wikiEditor .wikiEditor-tool-group + .wikiEditor-tool-group { border-inline-start: 1px solid #c8ccd1; }
+.wikiEditor .wikiEditor-tool, .wikiEditor .wikiEditor-tab,
+.wikiEditor .wikiEditor-booklet-page, .wikiEditor .wikiEditor-character {
+	appearance: none;
+	margin: 0;
+	border: 1px solid transparent;
+	border-radius: 2px;
+	color: #202122;
+	background: transparent;
+	font: inherit;
+	line-height: 1.3;
+	cursor: pointer;
+}
+.wikiEditor .wikiEditor-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-inline-size: 30px;
+	min-block-size: 30px;
+	padding: 3px 5px;
+	vertical-align: middle;
+}
+.wikiEditor .wikiEditor-tool-symbol { font-size: 17px; white-space: nowrap; }
+.wikiEditor .wikiEditor-tool[data-tool="bold"] .wikiEditor-tool-symbol { font-family: Georgia, serif; font-weight: bold; font-size: 21px; }
+.wikiEditor .wikiEditor-tool[data-tool="italic"] .wikiEditor-tool-symbol { font-family: Georgia, serif; font-style: italic; font-size: 21px; }
+.wikiEditor .wikiEditor-tool[data-tool="code"] .wikiEditor-tool-symbol { font-family: monospace; font-weight: bold; }
+.wikiEditor .wikiEditor-tool[data-tool="small"] .wikiEditor-tool-symbol { font-size: 14px; }
+.wikiEditor .wikiEditor-tab { padding: 5px 9px; color: #36c; white-space: nowrap; }
+.wikiEditor .wikiEditor-tab::before {
+	display: inline-block;
+	inline-size: 0;
+	block-size: 0;
+	margin-inline-end: 6px;
+	border-inline: 4px solid transparent;
+	border-block-start: 5px solid #54595d;
+	content: '';
+	vertical-align: middle;
+}
+.wikiEditor .wikiEditor-tab[aria-expanded="true"] { background: #fff; border-color: #a2a9b1; color: #202122; }
+.wikiEditor .wikiEditor-tab[aria-expanded="true"]::before { transform: rotate(180deg); }
+.wikiEditor .wikiEditor-tool:hover, .wikiEditor .wikiEditor-tab:hover,
+.wikiEditor .wikiEditor-character:hover { border-color: #a2a9b1; background: #fff; }
+.wikiEditor .wikiEditor-tool:active, .wikiEditor .wikiEditor-character:active { background: #c8ccd1; }
+.wikiEditor .wikiEditor-panel { border-block-start: 1px solid #c8ccd1; background: #f8f9fa; }
+.wikiEditor .wikiEditor-panel-advanced { padding: 5px; gap: 6px 0; }
+.wikiEditor .wikiEditor-heading {
+	max-inline-size: 100%;
+	min-block-size: 30px;
+	padding: 3px 6px;
+	border: 1px solid #a2a9b1;
+	border-radius: 2px;
+	color: #202122;
+	background: #fff;
+	font: inherit;
+}
+.wikiEditor .wikiEditor-panel-characters, .wikiEditor .wikiEditor-panel-help { display: flex; min-block-size: 150px; }
+.wikiEditor .wikiEditor-booklet-nav {
+	display: flex;
+	flex: 0 0 160px;
+	flex-direction: column;
+	gap: 1px;
+	max-block-size: 260px;
+	overflow: auto;
+	border-inline-end: 1px solid #c8ccd1;
+	padding: 5px 0;
+	background: #eaecf0;
+}
+.wikiEditor .wikiEditor-booklet-page { padding: 5px 12px; text-align: start; color: #36c; border-radius: 0; overflow-wrap: anywhere; }
+.wikiEditor .wikiEditor-booklet-page:hover { background: #f8f9fa; }
+.wikiEditor .wikiEditor-booklet-page[aria-pressed="true"] { background: #fff; color: #202122; font-weight: bold; }
+.wikiEditor .wikiEditor-booklet-body { flex: 1; min-inline-size: 0; max-block-size: 260px; overflow: auto; padding: 8px; background: #fff; }
+.wikiEditor .wikiEditor-character-grid { display: flex; flex-wrap: wrap; align-content: start; gap: 3px; }
+.wikiEditor .wikiEditor-character { min-inline-size: 30px; min-block-size: 30px; padding: 3px 6px; border-color: #c8ccd1; background: #f8f9fa; font-size: 17px; unicode-bidi: isolate; }
+.wikiEditor .wikiEditor-help-table { inline-size: 100%; border-collapse: collapse; font-size: 13px; }
+.wikiEditor .wikiEditor-help-table th, .wikiEditor .wikiEditor-help-table td { padding: 6px 9px; border: 1px solid #c8ccd1; text-align: start; vertical-align: top; }
+.wikiEditor .wikiEditor-help-table thead th { background: #eaecf0; }
+.wikiEditor .wikiEditor-help-table tbody th { font-weight: normal; background: #f8f9fa; }
+.wikiEditor .wikiEditor-help-table td { white-space: pre-wrap; overflow-wrap: anywhere; }
+.wikiEditor .wikiEditor-help-table code { font-family: monospace; white-space: pre-wrap; }
+.wikiEditor .wikiEditor-help-table h2, .wikiEditor .wikiEditor-help-table h3,
+.wikiEditor .wikiEditor-help-table h4, .wikiEditor .wikiEditor-help-table h5 { margin: 0; line-height: 1.3; }
+.wikiEditor .wikiEditor-help-table h2 { font: 1.5em Georgia, serif; border-block-end: 1px solid #a2a9b1; }
+.wikiEditor .wikiEditor-help-table h3 { font-size: 1.3em; }
+.wikiEditor .wikiEditor-help-table h4 { font-size: 1.1em; }
+.wikiEditor .wikiEditor-help-table h5 { font-size: 1em; }
+.wikiEditor .wikiEditor-help-table ul, .wikiEditor .wikiEditor-help-table ol { margin: 0; padding-inline-start: 22px; white-space: normal; }
+.wikiEditor .wikiEditor-help-file { display: inline-block; margin: 0; padding: 4px; border: 1px solid #c8ccd1; background: #f8f9fa; }
+.wikiEditor .wikiEditor-help-image { display: block; min-inline-size: 100px; background: #eaecf0; text-align: center; font-size: 28px; }
+.wikiEditor .wikiEditor-help-indent-1 { margin-inline-start: 1.5em; }
+.wikiEditor .wikiEditor-help-indent-2 { margin-inline-start: 3em; }
+
+/* Native textarea, preview and drag handle supplied by the host class. */
+.wikiEditor .wikiEditor-workspace, .wikiEditor .wikiEditor-edit-area { min-inline-size: 0; }
+.wikiEditor textarea {
+	display: block;
+	inline-size: 100%;
+	max-inline-size: 100%;
+	min-block-size: 240px;
+	margin: 0;
+	padding: 8px;
+	border: 1px solid var(--wikiEditor-border);
+	border-radius: 0;
+	color: #202122;
+	background: #fff;
+	font: 14px/1.5 monospace;
+	tab-size: 4;
+	resize: vertical;
+}
+.wikiEditor .wikiEditor-textarea { resize: none; }
+.wikiEditor .wikiEditor-resizer, .wikiEditor .wikiEditor-resize-handle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 100%;
+	block-size: 12px;
+	border: 1px solid #a2a9b1;
+	border-block-start: 0;
+	background: #eaecf0;
+	cursor: ns-resize;
+	touch-action: none;
+	user-select: none;
+}
+.wikiEditor .wikiEditor-resizer::after, .wikiEditor .wikiEditor-resize-handle::after { inline-size: 36px; block-size: 4px; border-block: 1px solid #72777d; content: ''; }
+.wikiEditor .wikiEditor-preview {
+	min-inline-size: 0;
+	margin-block-start: 8px;
+	padding: 12px;
+	border: 1px solid #a2a9b1;
+	background: #fff;
+	overflow-wrap: anywhere;
+}
+.wikiEditor .wikiEditor-preview[aria-busy="true"] { opacity: .65; }
+.wikiEditor .wikiEditor-preview img, .wikiEditor .wikiEditor-preview video { max-inline-size: 100%; block-size: auto; }
+.wikiEditor .wikiEditor-preview pre { max-inline-size: 100%; overflow: auto; }
+.wikiEditor .wikiEditor-preview-toggle { margin-inline-start: auto; }
+.wikiEditor .wikiEditor-status, .wikiEditor .wikiEditor-error { margin-block: 6px; font-size: 13px; }
+.wikiEditor .wikiEditor-error, .wikiEditor .wikiEditor-dialog [role="alert"] { color: #b32424; }
+
+/* showModal promotes a dialog to the top layer, but keeps this ancestry scope. */
+.wikiEditor .wikiEditor-dialog {
+	inline-size: min(560px, calc(100vw - 32px));
+	max-inline-size: calc(100vw - 32px);
+	max-block-size: calc(100vh - 32px);
+	margin: auto;
+	padding: 0;
+	border: 1px solid #72777d;
+	border-radius: 2px;
+	box-shadow: 0 2px 12px #0004;
+	color: #202122;
+	background: #fff;
+	font: 14px/1.5 sans-serif;
+	text-align: start;
+	overflow: auto;
+}
+.wikiEditor .wikiEditor-dialog::backdrop { background: rgb(0 0 0 / 35%); }
+.wikiEditor .wikiEditor-dialog form { display: grid; gap: 12px; margin: 0; padding: 20px; }
+.wikiEditor .wikiEditor-dialog h2, .wikiEditor .wikiEditor-dialog h3 { margin: 0 0 4px; font-size: 20px; font-weight: normal; }
+.wikiEditor .wikiEditor-dialog label { display: grid; gap: 4px; font-weight: bold; }
+.wikiEditor .wikiEditor-dialog input:not([type="checkbox"]):not([type="radio"]),
+.wikiEditor .wikiEditor-dialog select, .wikiEditor .wikiEditor-dialog textarea {
+	inline-size: 100%;
+	min-inline-size: 0;
+	min-block-size: 32px;
+	padding: 5px 8px;
+	border: 1px solid #a2a9b1;
+	border-radius: 2px;
+	color: #202122;
+	background: #fff;
+	font: inherit;
+	font-weight: normal;
+}
+.wikiEditor .wikiEditor-dialog textarea { min-block-size: 80px; }
+.wikiEditor .wikiEditor-dialog input[type="checkbox"], .wikiEditor .wikiEditor-dialog input[type="radio"] { inline-size: 16px; block-size: 16px; margin-inline: 0 6px; accent-color: #36c; }
+.wikiEditor .wikiEditor-dialog label:has(input[type="checkbox"]), .wikiEditor .wikiEditor-dialog label:has(input[type="radio"]) { display: flex; align-items: center; gap: 4px; font-weight: normal; }
+.wikiEditor .wikiEditor-dialog fieldset { min-inline-size: 0; margin: 0; padding: 10px; border: 1px solid #c8ccd1; }
+.wikiEditor .wikiEditor-dialog legend { padding-inline: 5px; font-weight: bold; }
+.wikiEditor .wikiEditor-dialog button, .wikiEditor .wikiEditor-preview-toggle {
+	min-block-size: 32px;
+	padding: 5px 12px;
+	border: 1px solid #a2a9b1;
+	border-radius: 2px;
+	color: #202122;
+	background: #f8f9fa;
+	font: inherit;
+	font-weight: bold;
+	cursor: pointer;
+}
+.wikiEditor .wikiEditor-dialog button:hover, .wikiEditor .wikiEditor-preview-toggle:hover { background: #fff; border-color: #72777d; }
+.wikiEditor .wikiEditor-dialog button[type="submit"], .wikiEditor .wikiEditor-dialog .wikiEditor-primary { border-color: #36c; color: #fff; background: #36c; }
+.wikiEditor .wikiEditor-dialog button[type="submit"]:hover, .wikiEditor .wikiEditor-dialog .wikiEditor-primary:hover { border-color: #447ff5; background: #447ff5; }
+.wikiEditor .wikiEditor-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-block-start: 8px; }
+.wikiEditor .wikiEditor-dialog-help, .wikiEditor .wikiEditor-dialog small { color: #54595d; font-size: 13px; font-weight: normal; white-space: pre-line; }
+.wikiEditor .wikiEditor-dialog [role="status"] { color: #54595d; }
+.wikiEditor .wikiEditor-suggestions { max-block-size: 180px; margin: 0; padding: 0; border: 1px solid #a2a9b1; list-style: none; overflow: auto; }
+.wikiEditor .wikiEditor-suggestions button { inline-size: 100%; border: 0; border-radius: 0; text-align: start; font-weight: normal; }
+.wikiEditor .wikiEditor-suggestions button[aria-selected="true"] { background: #eaf3ff; }
+.wikiEditor button:disabled, .wikiEditor input:disabled, .wikiEditor select:disabled { opacity: .5; cursor: not-allowed; }
+.wikiEditor button:focus-visible, .wikiEditor select:focus-visible,
+.wikiEditor input:focus-visible, .wikiEditor textarea:focus-visible,
+.wikiEditor [tabindex]:focus-visible, .wikiEditor a:focus-visible {
+	outline: 2px solid #36c;
+	outline-offset: 2px;
+}
+.wikiEditor textarea:focus-visible { outline-offset: -2px; }
+.wikiEditor [dir="rtl"] .wikiEditor-tool[data-tool="redirect"] .wikiEditor-tool-symbol { transform: scaleX(-1); }
+@media (max-width: 600px) {
+	.wikiEditor .wikiEditor-toolbar-top { gap: 2px; padding-inline: 2px; }
+	.wikiEditor .wikiEditor-tabs { flex-wrap: wrap; margin-inline-start: 0; }
+	.wikiEditor .wikiEditor-tab { padding-inline: 6px; font-size: 13px; }
+	.wikiEditor .wikiEditor-tool-group { padding-inline: 2px; }
+	.wikiEditor .wikiEditor-booklet-nav { flex-basis: 115px; font-size: 12px; }
+	.wikiEditor .wikiEditor-booklet-page { padding-inline: 7px; }
+	.wikiEditor .wikiEditor-booklet-body { padding: 5px; }
+	.wikiEditor .wikiEditor-help-table { min-inline-size: 400px; }
+	.wikiEditor .wikiEditor-dialog form { padding: 14px; }
+}
+@media (forced-colors: active) {
+	.wikiEditor .wikiEditor-tool, .wikiEditor .wikiEditor-character { border-color: ButtonText; }
+	.wikiEditor .wikiEditor-tab[aria-expanded="true"], .wikiEditor .wikiEditor-booklet-page[aria-pressed="true"] { border: 1px solid Highlight; }
+	.wikiEditor button:focus-visible, .wikiEditor textarea:focus-visible { outline-color: Highlight; }
+}
