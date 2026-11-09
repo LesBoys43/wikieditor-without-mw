@@ -1,0 +1,40 @@
+{
+  "name": "wikieditor-vue",
+  "version": "0.1.0",
+  "description": "Vue 3 component for wikieditor-without-mw",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"},
+    "./min": {"types": "./dist/index.d.ts", "import": "./dist/index.min.js"},
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "src", "COPYING", "NOTICE.md", "README.md", "tsconfig.json", "tsup.config.ts", "scripts"],
+  "sideEffects": ["**/*.css"],
+  "scripts": {
+    "build": "tsup && node scripts/copy-assets.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "prepack": "pnpm run typecheck && pnpm run build"
+  },
+  "dependencies": {
+    "wikieditor-without-mw": "^0.1.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.72.0",
+    "eslint": "^8.57.0",
+    "eslint-config-wikimedia": "^0.32.6",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vue": "^3.3.0",
+    "vue-eslint-parser": "^10.4.1"
+  },
+  "keywords": ["vue", "vue3", "wikieditor", "wikitext", "typescript"]
+}

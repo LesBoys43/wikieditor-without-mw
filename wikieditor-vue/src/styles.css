@@ -1,0 +1,2 @@
+/* Let the application bundler resolve the npm dependency's CSS and SVG assets. */
+@import 'wikieditor-without-mw/styles.css';
