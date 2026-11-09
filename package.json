@@ -1,7 +1,7 @@
 {
   "name": "wikieditor-without-mw",
   "version": "0.1.0",
-  "description": "This packages allows you use WikiEditor without entire MediaWiki, formerly independ-wikieditor, used GPT-6.1 Sol to code.",
+  "description": "This package lets you use WikiEditor without an entire MediaWiki installation. Formerly called independ-wikieditor (unrelated, and now archived), it was coded using GPT-6.1 Sol.",
   "license": "GPL-2.0-or-later",
   "type": "module",
   "module": "./dist/index.js",
