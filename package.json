@@ -1,7 +1,7 @@
 {
   "name": "wikieditor-without-mw",
   "version": "0.1.0",
-  "description": "Standalone TypeScript WikiEditor for textarea-based Wikitext editing, without MediaWiki or jQuery",
+  "description": "This packages allows you use WikiEditor without entire MediaWiki, formerly independ-wikieditor, used GPT-6.1 Sol to code.",
   "license": "GPL-2.0-or-later",
   "type": "module",
   "module": "./dist/index.js",
@@ -42,8 +42,15 @@
   },
   "keywords": [
     "wikieditor",
+    "wikieditor-without-mw",
+    "independ-wikieditor",
     "wikitext",
+    "mediawiki",
+    "wiki",
     "editor",
+    "textarea",
+    "toolbar",
+    "standalone",
     "typescript"
   ],
   "devDependencies": {
