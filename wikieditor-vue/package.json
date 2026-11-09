@@ -1,6 +1,7 @@
 {
   "name": "wikieditor-vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "repository": "github:LesBoys43/wikieditor-without-mw",
   "description": "Vue bindings of wikieditor-without-mw.",
   "license": "GPL-2.0-or-later",
   "type": "module",
