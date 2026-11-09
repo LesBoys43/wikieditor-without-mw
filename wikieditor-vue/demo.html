@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>wikieditor-vue Demo</title>
+	<!-- Static HTTP demo: use the installed npm parent's stylesheet and SVG assets. -->
+	<link rel="stylesheet" href="./node_modules/wikieditor-without-mw/dist/styles.css">
+	<style>
+		body { max-width: 1080px; margin: 32px auto; padding: 0 20px; font: 15px/1.6 system-ui, sans-serif; color: #202122; background: #f8f9fa; }
+		[v-cloak] { display: none; }
+		.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+		.controls button, .controls select { padding: 6px 10px; font: inherit; }
+		textarea { box-sizing: border-box; width: 100%; min-height: 160px; }
+		pre { padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; background: white; border: 1px solid #c8ccd1; }
+		.note { color: #54595d; }
+		#error { white-space: pre-wrap; color: #b32424; }
+	</style>
+	<script type="importmap">
+	{
+		"imports": {
+			"vue": "./node_modules/vue/dist/vue.esm-browser.js",
+			"wikieditor-without-mw": "./node_modules/wikieditor-without-mw/dist/index.js"
+		}
+	}
+	</script>
+</head>
+<body>
+	<h1>wikieditor-vue 独立 Demo</h1>
+	<p class="note">在子包目录执行 <code>pnpm install</code>、<code>pnpm run build</code> 后，通过静态 HTTP 服务访问本页。需允许访问本目录的 node_modules；不要使用 file://。不使用 CDN，也不引用仓库父目录的源码。</p>
+	<p class="note">演示 Vue v-model、props、事件和暴露方法。这里不配置解析器、上传、标题搜索或渲染预览；下方显示的是纯文本 Wikitext。</p>
+	<p id="error" role="alert"></p>
+	<div id="app" v-cloak>
+		<div class="controls">
+			<label>语言
+				<select v-model="language" @change="changeLanguage">
+					<option value="en">English</option>
+					<option value="zh-hans">简体中文</option>
+					<option value="zh-hant">繁體中文</option>
+					<option value="ar">العربية / RTL</option>
+				</select>
+			</label>
+			<label><input v-model="disabled" type="checkbox"> 禁用</label>
+			<label><input v-model="readonly" type="checkbox"> 只读</label>
+			<button type="button" @click="visible = !visible">{{ visible ? '卸载组件' : '挂载组件' }}</button>
+			<button type="button" :disabled="!visible" @click="component?.focus()">聚焦</button>
+			<button type="button" :disabled="!visible" @click="component?.reinitialize()">重新初始化</button>
+			<button type="button" :disabled="!visible || disabled || readonly" @click="insert">通过实例插入</button>
+		</div>
+		<wiki-editor
+			v-if="visible"
+			ref="component"
+			v-model="text"
+			:options="options"
+			:disabled="disabled"
+			:readonly="readonly"
+			:textarea-attrs="textareaAttrs"
+			@ready="record('ready')"
+			@destroy="record('destroy')"
+			@change="record('change')"
+			@focus="record('focus')"
+			@blur="record('blur')"
+			@error="onError"
+			@preference-change="preferenceChanged"
+		></wiki-editor>
+		<p role="status" aria-live="polite">{{ message }}</p>
+		<h2>宿主 v-model</h2>
+		<p class="note">在下面修改文本会反向同步到编辑器；卸载后文本仍由宿主保留。</p>
+		<label for="host-model">宿主文本</label>
+		<textarea id="host-model" v-model="text" spellcheck="false"></textarea>
+		<details>
+			<summary>当前 Wikitext（{{ text.length }} 个 UTF-16 代码单元）</summary>
+			<pre>{{ text }}</pre>
+		</details>
+		<details>
+			<summary>最近 12 条组件事件</summary>
+			<pre>{{ events.join('\n') }}</pre>
+		</details>
+	</div>
+	<noscript>此示例需要启用 JavaScript。</noscript>
+	<script type="module">
+		try {
+			const [{createApp, ref, shallowRef, onBeforeUnmount}, {WikiEditor}] = await Promise.all([
+				import('vue'), import('./dist/index.js')
+			]);
+			createApp({
+				components: {WikiEditor},
+				setup() {
+					const text = ref("== Vue WikiEditor ==\n\n这是 '''粗体''' 和 ''斜体''。\n\n* 编辑器与宿主文本双向同步\n* 可切换语言、禁用或卸载组件\n");
+					const component = ref(null);
+					const language = ref('en');
+					const disabled = ref(false);
+					const readonly = ref(false);
+					const visible = ref(true);
+					// Keep options stable during typing; replace only for configuration changes.
+					const options = shallowRef({language: 'en'});
+					const textareaAttrs = {name: 'wikitext', 'aria-label': 'WikiEditor 内容', rows: 12};
+					const events = ref([]);
+					const message = ref('组件正在挂载……');
+					let request;
+					let revision = 0;
+
+					function record(name) {
+						events.value = [`${new Date().toLocaleTimeString()} ${name}`, ...events.value].slice(0, 12);
+						message.value = `最近事件：${name}`;
+					}
+					function onError(error) {
+						record(`error: ${error.message}`);
+					}
+					function preferenceChanged(key, value) {
+						record(`preference-change: ${key} = ${JSON.stringify(value)}`);
+					}
+					async function changeLanguage() {
+						const current = ++revision;
+						request?.abort();
+						request = new AbortController();
+						try {
+							const code = language.value;
+							const response = await fetch(`./node_modules/wikieditor-without-mw/i18n/${code}.json`, {signal: request.signal});
+							if (!response.ok) throw new Error(`翻译加载失败：HTTP ${response.status}`);
+							const messages = await response.json();
+							if (current === revision) options.value = {language: code, messages};
+						} catch (error) {
+							if (current === revision && error.name !== 'AbortError') onError(error);
+						}
+					}
+					function insert() {
+						component.value?.getEditor()?.insertText('\n通过 Vue 组件 ref 插入的文本。\n');
+					}
+					onBeforeUnmount(() => { revision++; request?.abort(); });
+					return {
+						text, component, language, disabled, readonly, visible, options,
+						textareaAttrs, events, message, record, onError, preferenceChanged,
+						changeLanguage, insert
+					};
+				}
+			}).mount('#app');
+		} catch (error) {
+			document.querySelector('#error').textContent = `加载失败：${error.message}\n请在 wikieditor-vue 目录安装依赖并构建，再通过 HTTP 访问本页。`;
+		}
+	</script>
+</body>
+</html>

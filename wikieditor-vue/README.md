@@ -33,6 +33,12 @@ const options: WikiEditorComponentOptions = {language: 'en'};
 
 Import the stylesheet explicitly using a bundler that resolves npm CSS imports and relative SVG URLs. Alternatively import `wikieditor-without-mw/styles.css` directly. JavaScript imports do not inject styles. `wikieditor-vue/min` provides minified ESM with the same API.
 
+## Standalone demo
+
+See [demo.html](./demo.html). Run `pnpm install` and `pnpm run build` **inside this subpackage**, then open the page through a static HTTP server that permits serving local `node_modules`. Do not use `file://`. The page uses an import map to load the installed Vue browser ESM build, the npm parent editor, and this subpackage's built ESM component. It uses no CDN or repository-parent source aliases and requires no demo-specific dependencies.
+
+The demo covers `v-model` synchronization in both directions, language switching, disabled/read-only props, mount/unmount, exposed instance commands and event logs. It does not include a renderer or backend service; Wikitext output is displayed as text. The demo is tracked in this Git repository, not included in the npm publication allowlist. The normal `build` remains a library build; serve `demo.html` as a static page after building rather than expecting a standalone demo bundle.
+
 ## Props
 
 | Prop | Default | Meaning |
