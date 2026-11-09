@@ -12,7 +12,17 @@
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "src", "COPYING", "NOTICE.md", "README.md", "tsconfig.json", "vite.config.ts", "scripts"],
+  "files": [
+    "package.json",
+    "dist",
+    "src",
+    "COPYING",
+    "NOTICE.md",
+    "README.md",
+    "tsconfig.json",
+    "vite.config.ts",
+    "scripts"
+  ],
   "sideEffects": ["**/*.css"],
   "scripts": {
     "build": "vite build && vite build --mode min && pnpm run build:types && node scripts/copy-assets.mjs",
