@@ -1,3 +1,5 @@
+@import url('./icons.css');
+
 /* Standalone 2010-style chrome. Every selector is scoped to an editor root. */
 .wikiEditor {
 	--wikiEditor-border: #a2a9b1;

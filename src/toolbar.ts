@@ -192,15 +192,24 @@ export class Toolbar {
 		const add = (
 			id: string, icon: string, action: ToolDefinition['action'],
 			section?: 'main' | 'advanced', group?: string, hotkey?: string,
-		): void => this.addTool({
-			id,
-			label: msg(id),
-			icon,
-			action,
-			section: section ?? 'main',
-			group: group ?? 'format',
-			hotkey,
-		});
+		): void => {
+			this.addTool({
+				id,
+				label: msg(id),
+				icon,
+				action,
+				section: section ?? 'main',
+				group: group ?? 'format',
+				hotkey,
+			});
+			// Only built-in controls use vendored SVG masks; custom text icons stay text.
+			const symbol = this.tools.get(id)?.button.firstElementChild;
+			if (symbol) {
+				symbol.className = 'wikiEditor-tool-icon';
+				symbol.textContent = '';
+				symbol.setAttribute('data-icon', id);
+			}
+		};
 		add('bold', 'B', wrap('bold', "'''", "'''"), 'main', 'format', 'b');
 		add('italic', 'I', wrap('italic', "''", "''"), 'main', 'format', 'i');
 		add('link', '🔗', (host) => host.openDialog('link'), 'main', 'insert');

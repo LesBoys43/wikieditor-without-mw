@@ -1,0 +1,33 @@
+/* Vendored Codex SVG files, selected by filename and used without modifying their contents. */
+.wikiEditor .wikiEditor-tool-icon {
+	display: inline-block;
+	inline-size: 20px;
+	block-size: 20px;
+	flex: 0 0 20px;
+	background-color: currentColor;
+	-webkit-mask: var(--wikiEditor-icon) center / contain no-repeat;
+	mask: var(--wikiEditor-icon) center / contain no-repeat;
+}
+.wikiEditor [data-icon="bold"] { --wikiEditor-icon: url('./icons/bold-b.svg'); }
+.wikiEditor [data-icon="italic"] { --wikiEditor-icon: url('./icons/italic-i.svg'); }
+.wikiEditor [data-icon="link"] { --wikiEditor-icon: url('./icons/link.svg'); }
+.wikiEditor [data-icon="file"] { --wikiEditor-icon: url('./icons/image.svg'); }
+.wikiEditor [data-icon="signature"] { --wikiEditor-icon: url('./icons/signature.svg'); }
+.wikiEditor [data-icon="ulist"] { --wikiEditor-icon: url('./icons/listBullet.svg'); }
+.wikiEditor [data-icon="olist"] { --wikiEditor-icon: url('./icons/listNumbered-ltr.svg'); }
+.wikiEditor[dir="rtl"] [data-icon="olist"] { --wikiEditor-icon: url('./icons/listNumbered-rtl.svg'); }
+.wikiEditor [data-icon="code"] { --wikiEditor-icon: url('./icons/code.svg'); }
+.wikiEditor [data-icon="nowiki"] { --wikiEditor-icon: url('./icons/noWikitext.svg'); }
+.wikiEditor [data-icon="newline"] { --wikiEditor-icon: url('./icons/newline.svg'); }
+.wikiEditor [data-icon="big"] { --wikiEditor-icon: url('./icons/largerText.svg'); }
+.wikiEditor [data-icon="small"] { --wikiEditor-icon: url('./icons/smallerText.svg'); }
+.wikiEditor [data-icon="superscript"] { --wikiEditor-icon: url('./icons/superscript.svg'); }
+.wikiEditor [data-icon="subscript"] { --wikiEditor-icon: url('./icons/subscript.svg'); }
+.wikiEditor [data-icon="gallery"] { --wikiEditor-icon: url('./icons/imageGallery-ltr.svg'); }
+.wikiEditor[dir="rtl"] [data-icon="gallery"] { --wikiEditor-icon: url('./icons/imageGallery-rtl.svg'); }
+.wikiEditor [data-icon="redirect"] { --wikiEditor-icon: url('./icons/articleRedirect.svg'); }
+.wikiEditor [data-icon="table"] { --wikiEditor-icon: url('./icons/table.svg'); }
+.wikiEditor [data-icon="replace"] { --wikiEditor-icon: url('./icons/search.svg'); }
+@media (forced-colors: active) {
+	.wikiEditor .wikiEditor-tool-icon { background-color: ButtonText; forced-color-adjust: none; }
+}

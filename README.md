@@ -106,7 +106,7 @@ Other options include:
 - `preferences`: initial per-instance values; `onPreferenceChange(key, value)` for host persistence. No cookies/localStorage or account API are used internally.
 - `tools`: custom toolbar definitions supplied at construction.
 
-The toolbar retains the official feature organization and Wikitext actions with a Wikimedia-inspired style. Native controls and text-symbol icons replace the OOUI widgets/icons. It is not pixel-identical to upstream; old jQuery extension configuration is not supported.
+The toolbar retains the official feature organization and Wikitext actions with a Wikimedia-inspired style. Native controls and locally vendored Codex SVG icons replace the OOUI widgets/icons. The SVG files are copied verbatim, without adding a Codex dependency, and retain their MIT license (see NOTICE.md). Custom tool `icon` values remain plain text. Importing `styles.css` also loads its relative icon stylesheet and SVG assets; preserve these relative paths when hosting the build. It is not pixel-identical to upstream; old jQuery extension configuration is not supported.
 
 ## Development and publication
 
