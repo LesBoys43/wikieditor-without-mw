@@ -4,13 +4,19 @@ import type {Messages, WikiEditorOptions} from './types';
 /** Text-only formatter: catalog strings never become executable markup. */
 export class MessageCatalog {
 	private readonly messages: Messages;
+
 	private readonly plural: Intl.PluralRules;
+
 	private readonly siteName: string;
 
-	constructor(language: string, options: WikiEditorOptions) {
-		const {['@metadata']: metadata, ...defaults} = english;
-		void metadata;
-		this.messages = Object.assign({}, defaults, ...(options.fallbackMessages || []).slice().reverse(), options.messages);
+	public constructor(language: string, options: WikiEditorOptions) {
+		const defaults: Messages = {};
+		for (const [key, value] of Object.entries(english))
+			if (typeof value === 'string')
+				defaults[key] = value;
+		this.messages = Object.assign(
+			{}, defaults, ...(options.fallbackMessages || []).slice().reverse(), options.messages,
+		);
 		this.siteName = options.siteName || 'Wiki';
 		try {
 			this.plural = new Intl.PluralRules(language);
@@ -19,7 +25,7 @@ export class MessageCatalog {
 		}
 	}
 
-	get(key: string, ...params: (string | number)[]): string {
+	public get(key: string, ...params: (string | number)[]): string {
 		let text = this.messages[key] || key;
 		text = text.replace(/\{\{SITENAME\}\}/g, this.siteName);
 		// Resolve innermost plural blocks before interpolating parameters.

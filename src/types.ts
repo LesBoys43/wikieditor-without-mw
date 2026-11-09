@@ -43,6 +43,17 @@ export interface MagicWords {
 	alt: string;
 }
 
+export interface ToolDefinition {
+	id: string;
+	label: string;
+	section?: 'main' | 'advanced';
+	group?: string;
+	/** Text symbol, never interpreted as HTML. */
+	icon?: string;
+	hotkey?: string;
+	action(editor: import('./types').EditorHost): void;
+}
+
 export interface WikiEditorOptions {
 	language?: string;
 	/** Supply an imported official JSON catalog or an application-specific override. */
@@ -134,15 +145,4 @@ export interface EditorHost {
 	openDialog(name: DialogName): void;
 	focus(): void;
 	reportError(error: unknown): void;
-}
-
-export interface ToolDefinition {
-	id: string;
-	label: string;
-	section?: 'main' | 'advanced';
-	group?: string;
-	/** Text symbol, never interpreted as HTML. */
-	icon?: string;
-	hotkey?: string;
-	action: (editor: EditorHost) => void;
 }

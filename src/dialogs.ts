@@ -1,6 +1,6 @@
 import type {
 	DialogName, EditorHost, FileInsertOptions, SearchOptions, SelectionRange, ServiceContext,
-	TitleSuggestion
+	TitleSuggestion,
 } from './types';
 
 interface DialogState {
@@ -26,41 +26,52 @@ let nextDialogId = 0;
 /** Native DOM dialogs. The host owns all text transformations and its own lifetime. */
 export class DialogManager {
 	private readonly host: EditorHost;
+
 	private readonly document: Document;
+
 	private active: DialogState | null = null;
+
 	private destroyed = false;
 
-	constructor(host: EditorHost) {
+	public constructor(host: EditorHost) {
 		this.host = host;
 		this.document = host.textarea.ownerDocument;
 	}
 
-	open(name: DialogName): void {
-		if (this.destroyed) {
+	public open(name: DialogName): void {
+		if (this.destroyed)
 			return;
-		}
+
 		this.close();
 		const state = this.create(name);
 		this.active = state;
 		try {
 			switch (name) {
-				case 'link': this.link(state); break;
-				case 'file': this.file(state); break;
-				case 'table': this.table(state); break;
-				case 'replace': this.replace(state); break;
+				case 'link':
+					this.link(state);
+					break;
+				case 'file':
+					this.file(state);
+					break;
+				case 'table':
+					this.table(state);
+					break;
+				case 'replace':
+					this.replace(state);
+					break;
 			}
 			this.host.element.append(state.root);
 			// Older browsers still get a labelled, keyboard-accessible modal surface.
-			if (typeof state.root.showModal === 'function') {
+			if (typeof state.root.showModal === 'function')
 				try {
 					state.root.showModal();
 					state.nativeModal = true;
 				} catch {
 					state.root.setAttribute('open', '');
 				}
-			} else {
+			else
 				state.root.setAttribute('open', '');
-			}
+
 			(state.initialFocus ?? state.root).focus();
 		} catch (error: unknown) {
 			this.close();
@@ -69,12 +80,23 @@ export class DialogManager {
 	}
 
 	/** Cancels requests and removes only this manager's DOM, never the host. */
-	destroy(): void {
-		if (this.destroyed) {
+	public destroy(): void {
+		if (this.destroyed)
 			return;
-		}
+
 		this.destroyed = true;
 		this.close();
+	}
+
+	/**
+	 * Create synthetic events in the textarea's document, including iframe hosts.
+	 *
+	 * @param {HTMLInputElement} input Control receiving the synthetic input event.
+	 */
+	private dispatchInput(input: HTMLInputElement): void {
+		const event = this.document.createEvent('Event');
+		event.initEvent('input', false, false);
+		input.dispatchEvent(event);
 	}
 
 	private message(key: string, ...params: (string | number)[]): string {
@@ -114,22 +136,30 @@ export class DialogManager {
 		root.append(heading, form);
 		const focused = this.document.activeElement;
 		const state: DialogState = {
-			root, form, body, footer, error, status,
+			root,
+			form,
+			body,
+			footer,
+			error,
+			status,
 			selection: this.host.getSelection(),
 			selectionDirection: this.host.textarea.selectionDirection,
 			scrollTop: this.host.textarea.scrollTop,
 			scrollLeft: this.host.textarea.scrollLeft,
 			previousFocus: focused && 'focus' in focused ? focused as HTMLElement : null,
-			requests: new Map(), cleanup: [], initialFocus: null, nativeModal: false
+			requests: new Map(),
+			cleanup: [],
+			initialFocus: null,
+			nativeModal: false,
 		};
 		root.addEventListener('cancel', (event) => {
 			event.preventDefault();
 			this.close();
 		});
 		root.addEventListener('close', () => {
-			if (this.active === state) {
+			if (this.active === state)
 				this.close();
-			}
+
 		});
 		root.addEventListener('keydown', (event) => {
 			if (event.key === 'Escape') {
@@ -137,24 +167,30 @@ export class DialogManager {
 				this.close();
 			} else if (event.key === 'Tab') {
 				const items = Array.from(root.querySelectorAll<HTMLElement>(
-					'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]'
+					'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]',
 				)).filter((item) => !item.hidden && item.getAttribute('type') !== 'hidden');
+				const activeElement = this.document.activeElement;
 				const first = items[0];
 				const last = items[items.length - 1];
 				if (!first || !last) {
 					event.preventDefault();
 					root.focus();
-				} else if (event.shiftKey && (this.document.activeElement === first || this.document.activeElement === root)) {
-					event.preventDefault(); last.focus();
-				} else if (!event.shiftKey && (this.document.activeElement === last || this.document.activeElement === root)) {
-					event.preventDefault(); first.focus();
+				} else if (event.shiftKey && (activeElement === first || activeElement === root)) {
+					event.preventDefault();
+					last.focus();
+				} else if (!event.shiftKey && (activeElement === last || activeElement === root)) {
+					event.preventDefault();
+					first.focus();
 				}
 			}
 		});
 		const containFocus = (event: FocusEvent): void => {
-			if (this.active === state && !state.nativeModal && event.target && !root.contains(event.target as Node)) {
+			if (
+				this.active === state && !state.nativeModal &&
+				event.target && !root.contains(event.target as Node)
+			)
 				(state.initialFocus ?? root).focus();
-			}
+
 		};
 		this.document.addEventListener('focusin', containFocus);
 		state.cleanup.push(() => this.document.removeEventListener('focusin', containFocus));
@@ -163,33 +199,35 @@ export class DialogManager {
 
 	private close(): void {
 		const state = this.active;
-		if (!state) {
+		if (!state)
 			return;
-		}
+
 		// Invalidate first: even services ignoring AbortSignal cannot update a closed dialog.
 		this.active = null;
-		for (const controller of state.requests.values()) {
+		for (const controller of state.requests.values())
 			controller.abort();
-		}
+
 		state.requests.clear();
-		for (const cleanup of state.cleanup) {
+		for (const cleanup of state.cleanup)
 			cleanup();
-		}
-		if (state.nativeModal && state.root.open) {
+
+		if (state.nativeModal && state.root.open)
 			state.root.close();
-		}
+
 		state.root.remove();
 		this.restoreSelection(state);
-		if (state.previousFocus?.isConnected) {
-			state.previousFocus.focus({ preventScroll: true });
-		} else if (this.host.textarea.isConnected) {
+		if (state.previousFocus?.isConnected)
+			state.previousFocus.focus({preventScroll: true});
+		else if (this.host.textarea.isConnected)
 			this.host.focus();
-		}
+
 	}
 
 	private restoreSelection(state: DialogState): void {
 		this.host.setSelection(state.selection.start, state.selection.end);
-		this.host.textarea.setSelectionRange(state.selection.start, state.selection.end, state.selectionDirection);
+		this.host.textarea.setSelectionRange(
+			state.selection.start, state.selection.end, state.selectionDirection,
+		);
 		this.host.textarea.scrollTop = state.scrollTop;
 		this.host.textarea.scrollLeft = state.scrollLeft;
 	}
@@ -207,9 +245,9 @@ export class DialogManager {
 		input.value = value;
 		input.className = 'wikiEditor-input';
 		this.label(state, labelText, input);
-		if (!state.initialFocus) {
+		if (!state.initialFocus)
 			state.initialFocus = input;
-		}
+
 		return input;
 	}
 
@@ -228,7 +266,12 @@ export class DialogManager {
 		return input;
 	}
 
-	private select<T extends string>(state: DialogState, label: string, choices: readonly (readonly [T, string])[], value: T): HTMLSelectElement {
+	private select<T extends string>(
+		state: DialogState,
+		label: string,
+		choices: readonly (readonly [T, string])[],
+		value: T,
+	): HTMLSelectElement {
 		const select = this.document.createElement('select');
 		select.className = 'wikiEditor-select';
 		for (const [optionValue, text] of choices) {
@@ -242,7 +285,13 @@ export class DialogManager {
 		return select;
 	}
 
-	private button(state: DialogState, key: string, action: () => void, primary = false, parent: HTMLElement = state.footer): HTMLButtonElement {
+	private button(
+		state: DialogState,
+		key: string,
+		action: () => void,
+		primary = false,
+		parent: HTMLElement = state.footer,
+	): HTMLButtonElement {
 		const button = this.document.createElement('button');
 		button.type = 'button';
 		button.className = primary ? 'wikiEditor-button wikiEditor-primary' : 'wikiEditor-button';
@@ -252,7 +301,9 @@ export class DialogManager {
 		return button;
 	}
 
-	private submit(state: DialogState, insertKey: string, cancelKey: string, action: () => void): void {
+	private submit(
+		state: DialogState, insertKey: string, cancelKey: string, action: () => void,
+	): void {
 		const primary = this.document.createElement('button');
 		primary.type = 'submit';
 		primary.className = 'wikiEditor-button wikiEditor-primary';
@@ -267,9 +318,9 @@ export class DialogManager {
 	}
 
 	private guard(state: DialogState, action: () => void): void {
-		if (this.destroyed || this.active !== state) {
+		if (this.destroyed || this.active !== state)
 			return;
-		}
+
 		this.clearError(state);
 		try {
 			action();
@@ -314,28 +365,47 @@ export class DialogManager {
 		state.requests.delete(key);
 	}
 
-	private async request<T>(state: DialogState, key: string, service: (context: ServiceContext) => Promise<T>, apply: (value: T) => void): Promise<void> {
+	private async request<T>(
+		state: DialogState,
+		key: string,
+		service: (context: ServiceContext) => Promise<T>,
+		apply: (value: T) => void,
+	): Promise<void> {
 		this.cancelRequest(state, key);
 		const controller = new AbortController();
 		state.requests.set(key, controller);
 		try {
-			const result = await service({ signal: controller.signal, language: this.host.language });
-			if (!this.destroyed && this.active === state && !controller.signal.aborted && state.requests.get(key) === controller) {
+			const result = await service({signal: controller.signal, language: this.host.language});
+			if (
+				!this.destroyed && this.active === state && !controller.signal.aborted &&
+				state.requests.get(key) === controller
+			)
 				apply(result);
-			}
+
 		} catch (error: unknown) {
-			if (!this.destroyed && this.active === state && !controller.signal.aborted && state.requests.get(key) === controller) {
+			if (
+				!this.destroyed && this.active === state && !controller.signal.aborted &&
+				state.requests.get(key) === controller
+			)
 				this.fail(state, error);
-			}
+
 		} finally {
-			if (state.requests.get(key) === controller) {
+			if (state.requests.get(key) === controller)
 				state.requests.delete(key);
-			}
+
 		}
 	}
 
-	/** Services are optional: the same text field always permits manual entry. */
-	private titles(state: DialogState, input: HTMLInputElement, enabled: () => boolean = () => true): void {
+	/**
+	 * Services are optional: the same text field always permits manual entry.
+	 *
+	 * @param {DialogState} state Active dialog and its request lifecycle.
+	 * @param {HTMLInputElement} input Manual title input.
+	 * @param {function(): boolean} enabled Whether title services apply to the current mode.
+	 */
+	private titles(
+		state: DialogState, input: HTMLInputElement, enabled: () => boolean = () => true,
+	): void {
 		const services = this.host.options.services;
 		const list = this.document.createElement('datalist');
 		list.id = `wikiEditor-titles-${nextDialogId}`;
@@ -349,12 +419,12 @@ export class DialogManager {
 			list.replaceChildren();
 			state.status.textContent = '';
 			const query = input.value.trim();
-			if (!query || !enabled()) {
+			if (!query || !enabled())
 				return;
-			}
+
 			if (services?.searchTitles) {
 				const search = services.searchTitles;
-				void this.request(state, 'search', (context) => search(query, context), (suggestions) => {
+				this.request(state, 'search', (context) => search(query, context), (suggestions) => {
 					for (const suggestion of suggestions) {
 						const option = this.document.createElement('option');
 						option.value = suggestion.title;
@@ -371,7 +441,7 @@ export class DialogManager {
 			const title = input.value.trim();
 			if (title && enabled() && services?.checkTitle) {
 				const check = services.checkTitle;
-				void this.request(state, 'check', (context) => check(title, context), (result: TitleSuggestion) => {
+				this.request(state, 'check', (context) => check(title, context), (result: TitleSuggestion) => {
 					const key = result.disambiguation ? 'disambig' : result.exists === true ? 'exists' : result.exists === false ? 'notexists' : null;
 					state.status.textContent = key ? this.message(`wikieditor-toolbar-tool-link-int-target-status-${key}`) : '';
 				});
@@ -381,10 +451,7 @@ export class DialogManager {
 	}
 
 	private link(state: DialogState): void {
-		const mode = this.select(state, this.message('wikieditor-toolbar-tool-link'), [
-			['internal', this.message('wikieditor-toolbar-tool-link-int')],
-			['external', this.message('wikieditor-toolbar-tool-link-ext')]
-		] as const, 'internal');
+		const mode = this.select(state, this.message('wikieditor-toolbar-tool-link'), [['internal', this.message('wikieditor-toolbar-tool-link-int')], ['external', this.message('wikieditor-toolbar-tool-link-ext')]] as const, 'internal');
 		const target = this.field(state, this.message('wikieditor-toolbar-tool-link-int-target'));
 		target.title = this.message('wikieditor-toolbar-tool-link-int-target-tooltip');
 		const text = this.field(state, this.message('wikieditor-toolbar-tool-link-int-text'), 'text', this.host.getSelectedText());
@@ -394,13 +461,13 @@ export class DialogManager {
 			const external = mode.value === 'external';
 			const targetCaption = target.parentElement?.querySelector('span');
 			const textCaption = text.parentElement?.querySelector('span');
-			if (targetCaption) {
+			if (targetCaption)
 				targetCaption.textContent = this.message(external ? 'wikieditor-toolbar-tool-link-ext-target' : 'wikieditor-toolbar-tool-link-int-target');
-			}
-			if (textCaption) {
+
+			if (textCaption)
 				textCaption.textContent = this.message(external ? 'wikieditor-toolbar-tool-link-ext-text' : 'wikieditor-toolbar-tool-link-int-text');
-			}
-			target.dispatchEvent(new Event('input'));
+
+			this.dispatchInput(target);
 		});
 		this.submit(state, 'wikieditor-toolbar-tool-link-insert', 'wikieditor-toolbar-tool-link-cancel', () => {
 			if (!target.value.trim()) {
@@ -423,15 +490,21 @@ export class DialogManager {
 		alt.setAttribute('aria-describedby', help.id);
 		state.body.append(help);
 		const size = this.field(state, this.message('wikieditor-toolbar-file-size'), 'number');
-		size.min = '1'; size.step = '1';
+		size.min = '1';
+		size.step = '1';
 		const words = this.host.magicWords;
 		const align = this.select(state, this.message('wikieditor-toolbar-file-float'), [
 			['', this.message('wikieditor-toolbar-file-default')],
-			['left', words.left], ['center', words.center], ['right', words.right], ['none', words.none]
+			['left', words.left],
+			['center', words.center],
+			['right', words.right],
+			['none', words.none],
 		] as const, '');
 		const format = this.select(state, this.message('wikieditor-toolbar-file-format'), [
-			['thumbnail', words.thumbnail], ['frame', words.frame], ['frameless', words.frameless],
-			['none', this.message('wikieditor-toolbar-file-format-none')]
+			['thumbnail', words.thumbnail],
+			['frame', words.frame],
+			['frameless', words.frameless],
+			['none', this.message('wikieditor-toolbar-file-format-none')],
 		] as const, 'thumbnail');
 		const upload = this.host.options.services?.uploadFile;
 		if (upload) {
@@ -443,12 +516,12 @@ export class DialogManager {
 					return;
 				}
 				// Repeated uploads supersede the previous request rather than blocking editing.
-				void this.request(state, 'upload', (context) => upload(selected, context), (result) => {
-					if (!result.title.trim()) {
+				this.request(state, 'upload', (context) => upload(selected, context), (result) => {
+					if (!result.title.trim())
 						throw new Error('The upload service returned an empty file title.');
-					}
+
 					title.value = result.title;
-					title.dispatchEvent(new Event('input'));
+					this.dispatchInput(title);
 				});
 			}, false, state.body);
 			const cancelUpload = (): void => {
@@ -468,11 +541,13 @@ export class DialogManager {
 				return;
 			}
 			const options: FileInsertOptions = {
-				title: title.value.trim(), caption: caption.value, alt: alt.value,
-				format: format.value as NonNullable<FileInsertOptions['format']>
+				title: title.value.trim(),
+				caption: caption.value,
+				alt: alt.value,
+				format: format.value as NonNullable<FileInsertOptions['format']>,
 			};
-			if (size.value) { options.size = parsedSize; }
-			if (align.value) { options.align = align.value as NonNullable<FileInsertOptions['align']>; }
+			if (size.value) options.size = parsedSize;
+			if (align.value) options.align = align.value as NonNullable<FileInsertOptions['align']>;
 			this.insert(state, () => this.host.insertFile(options));
 		});
 	}
@@ -481,7 +556,8 @@ export class DialogManager {
 		const rows = this.field(state, this.message('wikieditor-toolbar-tool-table-dimensions-rows'), 'number', '3');
 		const columns = this.field(state, this.message('wikieditor-toolbar-tool-table-dimensions-columns'), 'number', '3');
 		for (const input of [rows, columns]) {
-			input.min = '1'; input.step = '1';
+			input.min = '1';
+			input.step = '1';
 		}
 		const header = this.check(state, 'wikieditor-toolbar-tool-table-dimensions-header', true);
 		const wikitable = this.check(state, 'wikieditor-toolbar-tool-table-wikitable', true);
@@ -502,16 +578,20 @@ export class DialogManager {
 			}
 			// Match the public insertion API, counting the optional header row as well.
 			const limit = this.host.options.maxTableCells ?? 10000;
-			if (!Number.isSafeInteger(limit) || limit < 1) {
+			if (!Number.isSafeInteger(limit) || limit < 1)
 				throw new Error('maxTableCells must be a positive safe integer.');
-			}
+
 			if (rowCount + (header.checked ? 1 : 0) > Math.floor(limit / columnCount)) {
 				this.invalid(state, this.message('wikieditor-toolbar-tool-table-toomany', limit), rows);
 				return;
 			}
 			this.insert(state, () => this.host.insertTable({
-				rows: rowCount, columns: columnCount, header: header.checked,
-				wikitable: wikitable.checked, sortable: sortable.checked, caption: caption.value
+				rows: rowCount,
+				columns: columnCount,
+				header: header.checked,
+				wikitable: wikitable.checked,
+				sortable: sortable.checked,
+				caption: caption.value,
 			}));
 		});
 	}
@@ -528,32 +608,39 @@ export class DialogManager {
 				this.invalid(state, this.message('wikieditor-toolbar-tool-replace-emptysearch'), search);
 				return;
 			}
-			if (regex.checked) {
+			if (regex.checked)
 				try {
-					new RegExp(search.value, caseSensitive.checked ? 'g' : 'gi');
+					// Constructing the expression validates syntax without running a search.
+					RegExp(search.value, caseSensitive.checked ? 'g' : 'gi');
 				} catch (error: unknown) {
 					this.invalid(state, this.message('wikieditor-toolbar-tool-replace-invalidregex', error instanceof Error ? error.message : String(error)), search);
 					this.host.reportError(error);
 					return;
 				}
-			}
-			const options: SearchOptions = { caseSensitive: caseSensitive.checked, regex: regex.checked, wholeWord: wholeWord.checked };
+
+			const options: SearchOptions = {
+				caseSensitive: caseSensitive.checked,
+				regex: regex.checked,
+				wholeWord: wholeWord.checked,
+			};
 			this.restoreSelection(state);
 			let count: number;
-			if (action === 'find') {
+			if (action === 'find')
 				count = this.host.findNext(search.value, options) ? 1 : 0;
-			} else if (action === 'replace') {
-				count = this.host.replaceSelection(search.value, replacement.value, options) ? 1 : 0;
-			} else {
+			else if (action === 'replace')
+				count = this.host.replaceSelection(
+					search.value, replacement.value, options,
+				) ? 1 : 0;
+			else
 				count = this.host.replaceAll(search.value, replacement.value, options);
-			}
+
 			// Subsequent actions operate on the latest match rather than the opening selection.
 			this.rememberSelection(state);
-			if (!count) {
+			if (!count)
 				this.invalid(state, this.message('wikieditor-toolbar-tool-replace-nomatch'));
-			} else if (action !== 'find') {
+			else if (action !== 'find')
 				state.status.textContent = this.message('wikieditor-toolbar-tool-replace-success', count);
-			}
+
 		};
 		this.button(state, 'wikieditor-toolbar-tool-replace-button-findnext', () => run('find'), true);
 		this.button(state, 'wikieditor-toolbar-tool-replace-button-replace', () => run('replace'));

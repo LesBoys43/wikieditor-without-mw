@@ -121,7 +121,7 @@ npm publish
 
 Allow at least ten minutes when installing on an HDD. The build uses tsup, emits regular/minified ESM and declarations, and copies the scoped CSS. `prepack` performs type checking and a build. The package allowlist includes adaptation source and translation catalogs, not `official-wikieditor/`, development dependencies, tests or examples. Publishing requires your own npm credentials and access to the package name; publication is not performed by this repository.
 
-ESLint's root `.eslintrc.json` is copied unchanged from the requested `D:\forum` configuration; tsup follows the requested `D:\wikitext2html` layout with ESM-only output. No tests or example page are included, as requested.
+ESLint's root `.eslintrc.json` follows the requested `D:\forum` configuration with only two user-authorized additions disabling `es-x` rules; tsup follows the requested `D:\wikitext2html` layout with ESM-only output. No tests or example page are included, as requested.
 
 ## License
 

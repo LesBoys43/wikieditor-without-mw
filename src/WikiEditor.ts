@@ -8,33 +8,53 @@ import type {
 	ToolDefinition, WikiEditorOptions,
 } from './types';
 
-const activeEditors = new WeakMap<HTMLTextAreaElement, WikiEditor>();
+const activeEditors = new WeakSet<HTMLTextAreaElement>();
 
 /** Standalone Wikitext editing UI. Importing this module has no DOM side effects. */
 export class WikiEditor implements EditorHost {
-	readonly textarea: HTMLTextAreaElement;
-	readonly element: HTMLElement;
-	readonly options: WikiEditorOptions;
-	readonly language: string;
-	readonly direction: 'ltr' | 'rtl';
-	readonly magicWords: MagicWords;
+	public readonly textarea: HTMLTextAreaElement;
+
+	public readonly element: HTMLElement;
+
+	public readonly options: WikiEditorOptions;
+
+	public readonly language: string;
+
+	public readonly direction: 'ltr' | 'rtl';
+
+	public readonly magicWords: MagicWords;
+
 	private readonly catalog: MessageCatalog;
+
 	private readonly selection: TextSelection;
+
 	private readonly toolbar: Toolbar;
+
 	private readonly dialogs: DialogManager;
+
 	private readonly cleanup: (() => void)[] = [];
+
 	private readonly originalClass: string;
+
 	private readonly originalStyle: string | null;
+
 	private readonly preferences: Record<string, PreferenceValue>;
+
 	private destroyed = false;
+
 	private previewPane?: HTMLElement;
+
 	private previewButton?: HTMLButtonElement;
+
 	private previewRequest?: AbortController;
+
 	private previewTimer?: ReturnType<typeof setTimeout>;
+
 	private previewEnabled = false;
+
 	private previewRevision = 0;
 
-	constructor(textarea: HTMLTextAreaElement, options: WikiEditorOptions = {}) {
+	public constructor(textarea: HTMLTextAreaElement, options: WikiEditorOptions = {}) {
 		if (!textarea || textarea.tagName !== 'TEXTAREA' || !textarea.parentNode)
 			throw new TypeError('WikiEditor requires an attached textarea element.');
 		if (activeEditors.has(textarea))
@@ -44,8 +64,15 @@ export class WikiEditor implements EditorHost {
 		this.language = options.language || 'en';
 		this.direction = options.direction || (/^(ar|arc|ary|arz|azb|bcc|bgn|ckb|fa|he|ks|lki|lrc|mzn|nqo|pnb|ps|sd|sdh|skr-arab|ug|ur|yi)(-|$)/i.test(this.language) ? 'rtl' : 'ltr');
 		this.magicWords = {
-			redirect: '#REDIRECT', thumbnail: 'thumb', left: 'left', center: 'center',
-			right: 'right', none: 'none', frame: 'frame', frameless: 'frameless', alt: 'alt',
+			redirect: '#REDIRECT',
+			thumbnail: 'thumb',
+			left: 'left',
+			center: 'center',
+			right: 'right',
+			none: 'none',
+			frame: 'frame',
+			frameless: 'frameless',
+			alt: 'alt',
 			...options.magicWords,
 		};
 		this.catalog = new MessageCatalog(this.language, options);
@@ -68,7 +95,7 @@ export class WikiEditor implements EditorHost {
 			this.createResizer();
 		if (options.services?.renderPreview)
 			this.createPreview();
-		activeEditors.set(textarea, this);
+		activeEditors.add(textarea);
 	}
 
 	private listen(target: EventTarget, name: string, callback: EventListener): void {
@@ -86,16 +113,16 @@ export class WikiEditor implements EditorHost {
 		return !this.textarea.disabled && !this.textarea.readOnly;
 	}
 
-	msg(key: string, ...params: (string | number)[]): string {
+	public msg(key: string, ...params: (string | number)[]): string {
 		return this.catalog.get(key, ...params);
 	}
 
-	getValue(): string {
+	public getValue(): string {
 		this.assertActive();
 		return this.textarea.value;
 	}
 
-	setValue(value: string): void {
+	public setValue(value: string): void {
 		this.assertActive();
 		if (this.textarea.value === value)
 			return;
@@ -103,27 +130,27 @@ export class WikiEditor implements EditorHost {
 		this.emitInput();
 	}
 
-	getSelection(): SelectionRange {
+	public getSelection(): SelectionRange {
 		this.assertActive();
 		return this.selection.get();
 	}
 
-	setSelection(start: number, end = start): void {
+	public setSelection(start: number, end = start): void {
 		this.assertActive();
 		this.selection.set(start, end);
 	}
 
-	getSelectedText(): string {
+	public getSelectedText(): string {
 		const {start, end} = this.getSelection();
 		return this.getValue().slice(start, end);
 	}
 
-	focus(): void {
+	public focus(): void {
 		this.assertActive();
 		this.textarea.focus({preventScroll: true});
 	}
 
-	insertText(text: string): void {
+	public insertText(text: string): void {
 		if (!this.editable())
 			return;
 		this.selection.replace(text);
@@ -131,7 +158,7 @@ export class WikiEditor implements EditorHost {
 		this.emitInput();
 	}
 
-	encapsulate(options: EncapsulateOptions): void {
+	public encapsulate(options: EncapsulateOptions): void {
 		if (!this.editable())
 			return;
 		const pre = options.pre || '';
@@ -151,12 +178,12 @@ export class WikiEditor implements EditorHost {
 			if (options.regex.test(selected)) {
 				options.regex.lastIndex = 0;
 				output = selected.replace(options.regex, options.regexReplace);
-			} else {
+			} else
 				output = pre + middle + post;
-			}
-		} else {
+
+		} else
 			output = options.splitlines ? middle.split('\n').map((line) => pre + line + post).join('\n') : pre + middle + post;
-		}
+
 		this.selection.set(start, end);
 		this.selection.replace(output, true);
 		if (!selected && middle && !options.splitlines)
@@ -165,26 +192,34 @@ export class WikiEditor implements EditorHost {
 		this.emitInput();
 	}
 
-	insertLink(target: string, label = '', external = false): void {
+	public insertLink(target: string, label = '', external = false): void {
 		const title = target.trim();
-		if (!title || /[\n\r\[\]<>|]/.test(title) || /[\n\r\[\]<>|]/.test(label))
+		if (!title || /[\n\r[\]<>|]/.test(title) || /[\n\r[\]<>|]/.test(label))
 			throw new Error('Invalid link target or label.');
 		if (external) {
-			const protocols = this.options.allowedProtocols || ['https:', 'http:', 'mailto:', 'ftp:', '//'];
-			if (!protocols.some((protocol) => title.toLowerCase().startsWith(protocol.toLowerCase())))
+			const protocols = this.options.allowedProtocols || [
+				'https:',
+				'http:',
+				'mailto:',
+				'ftp:',
+				'//',
+			];
+			const allowed = protocols.some((protocol) =>
+				title.toLowerCase().startsWith(protocol.toLowerCase()));
+			if (!allowed)
 				throw new Error('The external link protocol is not allowed.');
 			this.insertText(`[${title}${label ? ` ${label}` : ''}]`);
-		} else {
+		} else
 			this.insertText(`[[${title}${label && label !== title ? `|${label}` : ''}]]`);
-		}
+
 	}
 
-	insertFile(options: FileInsertOptions): void {
+	public insertFile(options: FileInsertOptions): void {
 		const namespace = this.options.fileNamespace || 'File';
 		let title = options.title.trim();
 		if (title.toLowerCase().startsWith(`${namespace.toLowerCase()}:`))
 			title = title.slice(namespace.length + 1);
-		if (!title || /[\n\r\[\]<>|]/.test(title))
+		if (!title || /[\n\r[\]<>|]/.test(title))
 			throw new Error('Invalid filename.');
 		const parts = [`${namespace}:${title}`];
 		if (options.format && options.format !== 'none')
@@ -197,7 +232,7 @@ export class WikiEditor implements EditorHost {
 			parts.push(`${options.size}px`);
 		}
 		if (options.alt) {
-			if (/[\n\r|\[\]]/.test(options.alt))
+			if (/[\n\r|[\]]/.test(options.alt))
 				throw new Error('Alternative text cannot contain Wikitext delimiters.');
 			parts.push(`${this.magicWords.alt}=${options.alt}`);
 		}
@@ -206,9 +241,10 @@ export class WikiEditor implements EditorHost {
 		this.insertText(`[[${parts.join('|')}]]`);
 	}
 
-	insertTable(options: TableInsertOptions): void {
+	public insertTable(options: TableInsertOptions): void {
 		const {rows, columns} = options;
-		if (!Number.isSafeInteger(rows) || !Number.isSafeInteger(columns) || rows < 1 || columns < 1)
+		if (!Number.isSafeInteger(rows) || !Number.isSafeInteger(columns) ||
+			rows < 1 || columns < 1)
 			throw new Error(this.msg('wikieditor-toolbar-tool-table-invalidnumber'));
 		const limit = this.options.maxTableCells ?? 10000;
 		if (!Number.isSafeInteger(limit) || limit < 1)
@@ -231,7 +267,7 @@ export class WikiEditor implements EditorHost {
 		this.insertText(`${start && value[start - 1] !== '\n' ? '\n' : ''}${lines.join('\n')}${end < value.length && value[end] !== '\n' ? '\n' : ''}`);
 	}
 
-	findNext(search: string, options: SearchOptions = {}): SelectionRange | null {
+	public findNext(search: string, options: SearchOptions = {}): SelectionRange | null {
 		const pattern = TextSelection.pattern(search, options);
 		const value = this.getValue();
 		pattern.lastIndex = this.getSelection().end;
@@ -247,7 +283,9 @@ export class WikiEditor implements EditorHost {
 		return range;
 	}
 
-	replaceSelection(search: string, replacement: string, options: SearchOptions = {}): boolean {
+	public replaceSelection(
+		search: string, replacement: string, options: SearchOptions = {},
+	): boolean {
 		if (!this.editable())
 			return false;
 		const pattern = TextSelection.pattern(search, options);
@@ -258,10 +296,10 @@ export class WikiEditor implements EditorHost {
 		if (!match || match.index !== start || match.index + match[0].length !== end)
 			return false;
 		let text = replacement;
-		if (options.regex) {
+		if (options.regex)
 			// Let the engine expand captures using the full input (including lookarounds).
 			text = this.expandReplacement(replacement, match, value);
-		}
+
 		this.selection.replace(text);
 		this.emitInput();
 		return true;
@@ -288,7 +326,7 @@ export class WikiEditor implements EditorHost {
 		});
 	}
 
-	replaceAll(search: string, replacement: string, options: SearchOptions = {}): number {
+	public replaceAll(search: string, replacement: string, options: SearchOptions = {}): number {
 		if (!this.editable())
 			return 0;
 		const pattern = TextSelection.pattern(search, options);
@@ -312,33 +350,33 @@ export class WikiEditor implements EditorHost {
 		return count;
 	}
 
-	openDialog(name: DialogName): void {
+	public openDialog(name: DialogName): void {
 		if (this.editable())
 			this.dialogs.open(name);
 	}
 
-	togglePanel(name: PanelName): void {
+	public togglePanel(name: PanelName): void {
 		this.assertActive();
 		this.toolbar.togglePanel(name);
 	}
 
-	addTool(tool: ToolDefinition): void {
+	public addTool(tool: ToolDefinition): void {
 		this.assertActive();
 		this.toolbar.addTool(tool);
 	}
 
-	removeTool(id: string): void {
+	public removeTool(id: string): void {
 		this.assertActive();
 		this.toolbar.removeTool(id);
 	}
 
-	getPreference(key: string): PreferenceValue | undefined {
+	public getPreference(key: string): PreferenceValue | undefined {
 		this.assertActive();
 		const value = this.preferences[key];
 		return Array.isArray(value) ? value.slice() : value;
 	}
 
-	setPreference(key: string, value: PreferenceValue): void {
+	public setPreference(key: string, value: PreferenceValue): void {
 		this.assertActive();
 		this.preferences[key] = Array.isArray(value) ? value.slice() : value;
 		try {
@@ -367,26 +405,28 @@ export class WikiEditor implements EditorHost {
 			this.previewRevision++;
 			this.previewRequest?.abort();
 			clearTimeout(this.previewTimer);
-			this.previewTimer = setTimeout(() => void this.refreshPreview(), this.options.previewDebounce ?? 500);
+			this.previewTimer = setTimeout(() => {
+				this.refreshPreview().catch((error: unknown) => this.reportError(error));
+			}, this.options.previewDebounce ?? 500);
 		}
 	}
 
-	reportError(error: unknown): void {
+	public reportError(error: unknown): void {
 		const problem = error instanceof Error ? error : new Error(String(error));
-		if (this.options.onError) {
+		if (this.options.onError)
 			try {
 				this.options.onError(problem);
 			} catch {
 				// User error handlers must not break cleanup or event delivery.
 			}
-		}
+
 	}
 
 	private createPreview(): void {
 		const doc = this.textarea.ownerDocument;
 		this.previewButton = doc.createElement('button');
 		this.previewButton.type = 'button';
-		this.previewButton.className = 'wikiEditor-button';
+		this.previewButton.className = 'wikiEditor-button wikiEditor-preview-toggle';
 		this.previewButton.textContent = this.msg('wikieditor-realtimepreview-preview');
 		this.previewButton.setAttribute('aria-pressed', 'false');
 		this.toolbar.element.append(this.previewButton);
@@ -399,7 +439,7 @@ export class WikiEditor implements EditorHost {
 		this.listen(this.previewButton, 'click', () => this.setPreviewEnabled(!this.previewEnabled));
 	}
 
-	setPreviewEnabled(enabled: boolean): void {
+	public setPreviewEnabled(enabled: boolean): void {
 		this.assertActive();
 		if (!this.previewPane || !this.previewButton)
 			throw new Error('No renderPreview service was configured.');
@@ -411,10 +451,10 @@ export class WikiEditor implements EditorHost {
 		this.previewRequest?.abort();
 		this.setPreference('preview', enabled);
 		if (enabled)
-			void this.refreshPreview();
+			this.refreshPreview().catch((error: unknown) => this.reportError(error));
 	}
 
-	async refreshPreview(): Promise<void> {
+	public async refreshPreview(): Promise<void> {
 		this.assertActive();
 		const render = this.options.services?.renderPreview;
 		if (!render || !this.previewPane || !this.previewEnabled)
@@ -425,7 +465,10 @@ export class WikiEditor implements EditorHost {
 		const revision = ++this.previewRevision;
 		this.previewPane.setAttribute('aria-busy', 'true');
 		try {
-			const html = await render(this.getValue(), {signal: request.signal, language: this.language});
+			const html = await render(this.getValue(), {
+				signal: request.signal,
+				language: this.language,
+			});
 			if (request.signal.aborted || this.destroyed || revision !== this.previewRevision)
 				return;
 			// This is the sole trusted HTML boundary; the host contract requires sanitization.
@@ -453,7 +496,7 @@ export class WikiEditor implements EditorHost {
 		let pointer: number | undefined;
 		let startY = 0;
 		let height = 0;
-		const resize = (next: number) => {
+		const resize = (next: number): void => {
 			const size = Math.max(100, Math.round(next));
 			this.textarea.style.boxSizing = 'border-box';
 			this.textarea.style.height = `${size}px`;
@@ -474,7 +517,7 @@ export class WikiEditor implements EditorHost {
 			if (pointer === e.pointerId)
 				resize(height + e.clientY - startY);
 		});
-		const stop = () => {
+		const stop = (): void => {
 			if (pointer !== undefined) {
 				if (bar.hasPointerCapture(pointer))
 					bar.releasePointerCapture(pointer);
@@ -498,8 +541,10 @@ export class WikiEditor implements EditorHost {
 			resize(savedHeight);
 	}
 
-	/** Idempotent cleanup; retains edited value and returns the textarea to its current location. */
-	destroy(): void {
+	/**
+	 * Idempotent cleanup; retains edited value and returns the textarea to its current location.
+	 */
+	public destroy(): void {
 		if (this.destroyed)
 			return;
 		clearTimeout(this.previewTimer);
@@ -509,12 +554,12 @@ export class WikiEditor implements EditorHost {
 		for (const remove of this.cleanup)
 			remove();
 		this.cleanup.length = 0;
-		if (this.textarea.parentNode === this.element) {
+		if (this.textarea.parentNode === this.element)
 			if (this.element.parentNode)
 				this.element.parentNode.insertBefore(this.textarea, this.element);
 			else
 				this.element.removeChild(this.textarea);
-		}
+
 		this.textarea.className = this.originalClass;
 		if (this.originalStyle === null)
 			this.textarea.removeAttribute('style');
