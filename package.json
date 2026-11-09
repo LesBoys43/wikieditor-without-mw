@@ -7,14 +7,32 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"},
-    "./min": {"types": "./dist/index.d.ts", "import": "./dist/index.min.js"},
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./min": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.min.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./i18n/*.json": "./i18n/*.json",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "src", "i18n", "COPYING", "NOTICE.md", "README.md", "tsup.config.ts", "tsconfig.json", "scripts"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist",
+    "src",
+    "i18n",
+    "COPYING",
+    "NOTICE.md",
+    "README.md",
+    "tsup.config.ts",
+    "tsconfig.json",
+    "scripts"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "scripts": {
     "build": "tsup && node scripts/copy-assets.mjs",
     "typecheck": "tsc --noEmit",
@@ -22,13 +40,19 @@
     "lint:fix": "eslint src --fix",
     "prepack": "pnpm run typecheck && pnpm run build"
   },
-  "keywords": ["wikieditor", "wikitext", "editor", "typescript"],
+  "keywords": [
+    "wikieditor",
+    "wikitext",
+    "editor",
+    "typescript"
+  ],
   "devDependencies": {
     "@typescript-eslint/parser": "^8.72.0",
     "eslint": "^8.57.0",
     "eslint-config-wikimedia": "^0.32.6",
     "tsup": "^9.0.0",
     "typescript": "^5.9.3",
-    "vue-eslint-parser": "^10.4.1"
+    "vue-eslint-parser": "^10.4.1",
+    "wikitext2html": "^1.0.6"
   }
 }

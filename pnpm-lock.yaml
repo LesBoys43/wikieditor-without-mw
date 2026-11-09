@@ -26,6 +26,9 @@ importers:
       vue-eslint-parser:
         specifier: ^10.4.1
         version: 10.4.2(eslint@8.57.1)
+      wikitext2html:
+        specifier: ^1.0.6
+        version: 1.0.6
 
 packages:
 
@@ -1538,6 +1541,9 @@ packages:
     engines: {node: '>= 8'}
     hasBin: true
 
+  wikitext2html@1.0.6:
+    resolution: {integrity: sha512-ty2Rs5Idk4h9b6zTUGwf55kD+b6CzPeQzrXoIVX/zzKkUBRDVf/v3uPHxIfIt8EOVWgEcOw6n2j1C4a7/X+R5Q==}
+
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
@@ -3027,6 +3033,8 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  wikitext2html@1.0.6: {}
 
   word-wrap@1.2.5: {}
 

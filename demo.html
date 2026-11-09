@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>WikiEditor + wikitext2html Demo</title>
+	<link rel="stylesheet" href="./dist/styles.css">
+	<style>
+		body { max-width: 1100px; margin: 32px auto; padding: 0 20px; color: #202122; font: 15px/1.6 system-ui, sans-serif; background: #f8f9fa; }
+		h1 { font-size: 26px; }
+		.demo-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+		.demo-controls button, .demo-controls select { padding: 6px 12px; font: inherit; }
+		#content { width: 100%; min-height: 320px; box-sizing: border-box; }
+		#status, #render-status { white-space: pre-wrap; }
+		.demo-source { padding: 16px; border: 1px solid #c8ccd1; background: white; white-space: pre-wrap; overflow-wrap: anywhere; }
+		.demo-note { color: #54595d; }
+		.wikiEditor-preview { overflow: auto; }
+	</style>
+</head>
+<body>
+	<h1>WikiEditor + wikitext2html Demo</h1>
+	<p class="demo-note">原生 DOM / ESM / Codex SVG。编辑器不依赖 MediaWiki 或 jQuery；本示例通过宿主回调接入 wikitext2html npm 包。</p>
+	<p class="demo-note">先执行 <code>pnpm install</code> 和 <code>pnpm run build</code>，再通过静态 HTTP 服务访问项目根目录下的本页（不要用 file://）。只加载本地模块和翻译，不使用 CDN。</p>
+	<p class="demo-note">根据渲染器 README，支持粗斜体、标题、列表和外部链接等基础语法；内部链接、表格、模板、文件及扩展语法不保证支持。此处预览不代表完整 MediaWiki 渲染。</p>
+	<div class="demo-controls">
+		<label>界面语言
+			<select id="language">
+				<option value="zh-hans">简体中文</option>
+				<option value="zh-hant">繁體中文</option>
+				<option value="en">English</option>
+				<option value="ar">العربية / RTL</option>
+			</select>
+		</label>
+		<button id="initialize" type="button" disabled>重新初始化</button>
+		<button id="destroy" type="button" disabled>销毁编辑器</button>
+		<label><input id="live" type="checkbox" checked disabled> 实时预览</label>
+		<button id="render" type="button" disabled>立即渲染</button>
+		<button id="read" type="button">读取 Wikitext</button>
+	</div>
+	<label for="content">Wikitext 内容</label>
+	<textarea id="content" name="wikitext" spellcheck="false">== WikiEditor 独立版 ==
+
+这是一个 '''粗体''' 和 ''斜体'' 示例，也可以使用 '''''粗斜体'''''。
+
+* 选择文本后点击工具栏按钮
+* 打开“高级”尝试更多编辑功能
+*# 嵌套的编号列表
+
+[https://example.org 外部链接]
+</textarea>
+	<p id="status" role="status" aria-live="polite">正在加载编辑器与渲染器……</p>
+	<p id="render-status" role="status" aria-live="polite">预览尚未渲染。</p>
+	<p class="demo-note">“实时预览”关闭后仍可点击“立即渲染”。工具栏内的预览按钮控制面板显示；重新初始化时会依据上方复选框恢复实时模式。</p>
+	<details id="wikitext-details">
+		<summary>当前 Wikitext</summary>
+		<pre id="output" class="demo-source"></pre>
+	</details>
+	<details>
+		<summary>最近一次净化后的 HTML 源码</summary>
+		<pre id="html-output" class="demo-source"></pre>
+	</details>
+	<noscript>此示例需要启用 JavaScript。</noscript>
+	<script type="module">
+		const textarea = document.querySelector('#content');
+		const language = document.querySelector('#language');
+		const status = document.querySelector('#status');
+		const renderStatus = document.querySelector('#render-status');
+		const output = document.querySelector('#output');
+		const htmlOutput = document.querySelector('#html-output');
+		const initializeButton = document.querySelector('#initialize');
+		const destroyButton = document.querySelector('#destroy');
+		const renderButton = document.querySelector('#render');
+		const live = document.querySelector('#live');
+		let editor;
+		let WikiEditor;
+		let wikitextToHtml;
+		let revision = 0;
+		let previewHtml = '';
+		let latestRenderedText;
+		let forceRender = false;
+		let catalogRequest;
+
+		function updateOutput() {
+			output.textContent = textarea.value;
+		}
+
+		// A deliberately restrictive demo sanitizer: rebuild only documented basic
+		// formatting as fresh nodes. No original attributes or active content survive.
+		function sanitizeHtml(html) {
+			const parsed = new DOMParser().parseFromString(html, 'text/html');
+			const container = document.createElement('div');
+			const allowed = new Set([
+				'P', 'BR', 'B', 'STRONG', 'I', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+				'UL', 'OL', 'LI', 'DL', 'DT', 'DD', 'A', 'BLOCKQUOTE', 'PRE', 'CODE', 'HR'
+			]);
+			const blocked = new Set([
+				'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH', 'TEMPLATE',
+				'LINK', 'META', 'BASE', 'FORM', 'INPUT', 'BUTTON', 'TEXTAREA', 'SELECT'
+			]);
+			function appendSafe(source, parent) {
+				if (source.nodeType === Node.TEXT_NODE) {
+					parent.append(document.createTextNode(source.textContent));
+					return;
+				}
+				if (source.nodeType !== Node.ELEMENT_NODE || blocked.has(source.tagName)) return;
+				let target = parent;
+				if (allowed.has(source.tagName)) {
+					target = document.createElement(source.tagName.toLowerCase());
+					if (source.tagName === 'A') {
+						const href = source.getAttribute('href');
+						if (href) {
+							try {
+								// Only absolute web/mail links; no javascript:, data: or local navigation.
+								const url = new URL(href);
+								if (['https:', 'http:', 'mailto:'].includes(url.protocol)) {
+									target.setAttribute('href', url.href);
+									target.setAttribute('rel', 'noopener noreferrer');
+								}
+							} catch { /* Invalid or relative URLs remain inert text links. */ }
+						}
+					}
+					parent.append(target);
+				}
+				for (const child of source.childNodes) appendSafe(child, target);
+			}
+			for (const child of parsed.body.childNodes) appendSafe(child, container);
+			return container.innerHTML;
+		}
+
+		async function renderPreview(wikitext, {signal}) {
+			if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+			// Manual mode retains its last render while the textarea keeps changing.
+			if (!live.checked && !forceRender) return previewHtml;
+			forceRender = false;
+			const started = performance.now();
+			const html = wikitextToHtml(wikitext);
+			if (typeof html !== 'string') throw new TypeError('渲染器未返回 HTML 字符串。');
+			const safeHtml = sanitizeHtml(html);
+			if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+			previewHtml = safeHtml;
+			latestRenderedText = wikitext;
+			// Source views use textContent, never execute the renderer's raw HTML.
+			htmlOutput.textContent = safeHtml;
+			renderStatus.textContent = `已渲染 ${wikitext.length} 字符，耗时 ${(performance.now() - started).toFixed(1)} ms（含净化）。`;
+			return safeHtml;
+		}
+
+		async function initialize() {
+			const current = ++revision;
+			catalogRequest?.abort();
+			catalogRequest = new AbortController();
+			initializeButton.disabled = true;
+			status.textContent = '正在加载本地翻译……';
+			try {
+				const code = language.value;
+				const response = await fetch(`./i18n/${code}.json`, {signal: catalogRequest.signal});
+				if (!response.ok) throw new Error(`翻译加载失败：HTTP ${response.status}`);
+				const catalog = await response.json();
+				if (current !== revision) return;
+				editor?.destroy();
+				editor = undefined;
+				editor = new WikiEditor(textarea, {
+					language: code,
+					messages: catalog,
+					previewDebounce: 350,
+					services: {renderPreview},
+					onChange: updateOutput,
+					onError(error) { status.textContent = error.message; },
+					tools: [{
+						id: 'citation', label: '引用 / Citation', icon: '❞',
+						section: 'main', group: 'custom',
+						action(instance) {
+							instance.encapsulate({pre: '<ref>', post: '</ref>', peri: '引用内容'});
+						}
+					}]
+				});
+				destroyButton.disabled = false;
+				renderButton.disabled = false;
+				live.disabled = false;
+				if (live.checked) editor.setPreviewEnabled(true);
+				status.textContent = `已初始化：${code}。切换语言或销毁不会清空编辑内容。引用工具仅演示插入，渲染器不保证支持 ref 语法。`;
+				updateOutput();
+			} catch (error) {
+				if (current === revision) {
+					status.textContent = `初始化失败：${error.message}`;
+					destroyButton.disabled = !editor;
+					renderButton.disabled = !editor;
+					live.disabled = !editor;
+				}
+			} finally {
+				if (current === revision) initializeButton.disabled = false;
+			}
+		}
+
+		initializeButton.addEventListener('click', initialize);
+		language.addEventListener('change', () => { if (WikiEditor && wikitextToHtml) initialize(); });
+		destroyButton.addEventListener('click', () => {
+			revision++;
+			catalogRequest?.abort();
+			editor?.destroy();
+			editor = undefined;
+			destroyButton.disabled = true;
+			renderButton.disabled = true;
+			live.disabled = true;
+			initializeButton.disabled = false;
+			status.textContent = '编辑器已销毁，原 textarea 和编辑内容保留。';
+		});
+		live.addEventListener('change', () => {
+			if (!editor) return;
+			editor.setPreviewEnabled(live.checked);
+			if (!live.checked) renderStatus.textContent = '实时预览已暂停；点击“立即渲染”更新。';
+		});
+		renderButton.addEventListener('click', () => {
+			if (!editor) return;
+			try {
+				forceRender = true;
+				// setPreviewEnabled(true) refreshes even when the pane is already open.
+				editor.setPreviewEnabled(true);
+			} catch (error) {
+				status.textContent = `渲染失败：${error.message}`;
+			}
+		});
+		document.querySelector('#read').addEventListener('click', () => {
+			updateOutput();
+			document.querySelector('#wikitext-details').open = true;
+		});
+		textarea.addEventListener('input', () => {
+			updateOutput();
+			if (!live.checked && latestRenderedText !== textarea.value)
+				renderStatus.textContent = '内容已修改；点击“立即渲染”更新预览。';
+		});
+		window.addEventListener('pagehide', () => {
+			revision++;
+			catalogRequest?.abort();
+			editor?.destroy();
+			editor = undefined;
+			destroyButton.disabled = true;
+			renderButton.disabled = true;
+			live.disabled = true;
+			initializeButton.disabled = !WikiEditor || !wikitextToHtml;
+		});
+		updateOutput();
+		try {
+			const [editorModule, rendererModule] = await Promise.all([
+				import('./dist/index.js'),
+				import('./node_modules/wikitext2html/dist/index.js')
+			]);
+			WikiEditor = editorModule.WikiEditor;
+			wikitextToHtml = rendererModule.wikitextToHtml;
+			await initialize();
+		} catch (error) {
+			status.textContent = `模块加载失败：${error.message}\n请先 pnpm install、pnpm run build，并通过 HTTP 服务访问项目根目录（需允许访问 node_modules）。`;
+		}
+	</script>
+</body>
+</html>

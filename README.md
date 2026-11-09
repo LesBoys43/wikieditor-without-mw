@@ -31,6 +31,16 @@ The textarea must have a parent node. Its name, value and form participation rem
 
 The stylesheet is a separate import; do not expect the JavaScript module to inject it. ESM normal and minified entry points are `wikieditor-without-mw` and `wikieditor-without-mw/min`. No CJS, IIFE, jQuery plugin API, or legacy MediaWiki API is supplied.
 
+## Interactive demo
+
+Open [demo.html](./demo.html) through a static HTTP server rooted at this repository after running `pnpm install` and `pnpm run build`. Do not open it with `file://`. The server must allow local `node_modules` files to be served. No demo server is started automatically.
+
+The demo imports the installed **wikitext2html npm package** from `node_modules/wikitext2html/dist/index.js` and connects its documented `wikitextToHtml(text)` function to the editor's `renderPreview` host callback. It offers realtime preview, manual rendering, sanitized HTML source, language switching, custom tools, and destroy/reinitialize controls. Modules, translations, and icons are served locally, without a CDN. The renderer is a development dependency only; the published editor remains free of runtime dependencies.
+
+The renderer's README documents basic bold/italic, headings, lists and external links, not complete MediaWiki behavior. Do not assume tables, internal links, templates, files or extension tags will render like a wiki. A restrictive demo-specific allowlist rebuilds basic formatting nodes and web/mail links before insertion; original attributes, styles, scripts and embedded resources are discarded. This intentionally limits rendering fidelity and is not a general-purpose sanitizer for other applications.
+
+The demo is tracked in Git but excluded from the npm publication allowlist. To try it, use a repository checkout with development dependencies installed.
+
 ## Editing API
 
 - `getValue()`, `setValue(value)`, `focus()`.
@@ -121,7 +131,7 @@ npm publish
 
 Allow at least ten minutes when installing on an HDD. The build uses tsup, emits regular/minified ESM and declarations, and copies the scoped CSS. `prepack` performs type checking and a build. The package allowlist includes adaptation source and translation catalogs, not `official-wikieditor/`, development dependencies, tests or examples. Publishing requires your own npm credentials and access to the package name; publication is not performed by this repository.
 
-ESLint's root `.eslintrc.json` follows the requested `D:\forum` configuration with only two user-authorized additions disabling `es-x` rules; tsup follows the requested `D:\wikitext2html` layout with ESM-only output. No tests or example page are included, as requested.
+ESLint's root `.eslintrc.json` follows the requested `D:\forum` configuration with only two user-authorized additions disabling `es-x` rules; tsup follows the requested `D:\wikitext2html` layout with ESM-only output. No tests are included. The repository demo was added on request and is not part of the published npm package.
 
 ## License
 
