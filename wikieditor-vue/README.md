@@ -81,7 +81,7 @@ npm pack --dry-run
 npm publish
 ```
 
-Allow at least ten minutes for installation on HDDs. The declared dependency is `wikieditor-without-mw@^0.1.0` **from npm**, not a workspace/file/link dependency. Publish that parent version to npm before installing/building this child if it is not available yet. No fallback to local source is performed. Vue and the parent editor stay external to both JS bundles; declarations reference their public types. ESLint is copied from the parent; tsup follows its regular/minified ESM configuration. No tests are included or run.
+Allow at least ten minutes for installation on HDDs. The declared dependency is `wikieditor-without-mw@^0.1.0` **from npm**, not a workspace/file/link dependency. No fallback to local source is performed. Vue and the parent editor stay external to both JS bundles; declarations reference their public types. ESLint is copied from the parent; tsup follows its regular/minified ESM configuration. No tests are included or run.
 
 ## License
 
