@@ -81,7 +81,7 @@ npm pack --dry-run
 npm publish
 ```
 
-Allow at least ten minutes for installation on HDDs. The declared dependency is `wikieditor-without-mw@^0.1.0` **from npm**, not a workspace/file/link dependency. No fallback to local source is performed. Vue and the parent editor stay external to both JS bundles; declarations reference their public types. ESLint is copied from the parent; tsup follows its regular/minified ESM configuration. No tests are included or run.
+Allow at least ten minutes for installation on HDDs. The declared dependency is `wikieditor-without-mw@^0.1.0` **from npm**, not a workspace/file/link dependency. No fallback to local source is performed. Vue and the parent editor stay external to both JS bundles; declarations reference their public types. The component is implemented in `src/WikiEditor.vue` as a Vue SFC. ESLint is copied from the parent and checks both TS and Vue files. Vite library mode with `@vitejs/plugin-vue` builds regular/minified ESM; `vue-tsc` checks SFC types and emits declarations. The build copies the opt-in stylesheet after generating both bundles. Vite 7 requires Node.js 20.19+ or 22.12+. No tests are included or run.
 
 ## License
 

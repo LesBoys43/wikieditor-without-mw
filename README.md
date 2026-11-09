@@ -33,7 +33,7 @@ The stylesheet is a separate import; do not expect the JavaScript module to inje
 
 ## Vue 3 component
 
-The independently publishable [wikieditor-vue subpackage](./wikieditor-vue/README.md) provides a `<WikiEditor>` component with `v-model`, editor options, lifecycle events, and exposed instance access. It shares this Git repository but has its own package.json, ESLint configuration and tsup build. It depends on the parent package **from npm**, not through a local workspace link.
+The independently publishable [wikieditor-vue subpackage](./wikieditor-vue/README.md) provides a `<WikiEditor>` component with `v-model`, editor options, lifecycle events, and exposed instance access. It shares this Git repository but has its own package.json, ESLint configuration and Vite library build with a Vue SFC component. It depends on the parent package **from npm**, not through a local workspace link.
 
 ## Interactive demo
 
