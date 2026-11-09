@@ -31,6 +31,10 @@ The textarea must have a parent node. Its name, value and form participation rem
 
 The stylesheet is a separate import; do not expect the JavaScript module to inject it. ESM normal and minified entry points are `wikieditor-without-mw` and `wikieditor-without-mw/min`. No CJS, IIFE, jQuery plugin API, or legacy MediaWiki API is supplied.
 
+## Vue 3 component
+
+The independently publishable [wikieditor-vue subpackage](./wikieditor-vue/README.md) provides a `<WikiEditor>` component with `v-model`, editor options, lifecycle events, and exposed instance access. It shares this Git repository but has its own package.json, ESLint configuration and tsup build. It depends on the parent package **from npm**, not through a local workspace link; publish the required parent version before installing the subpackage if it is not yet available in the registry.
+
 ## Interactive demo
 
 Open [demo.html](./demo.html) through a static HTTP server rooted at this repository after running `pnpm install` and `pnpm run build`. Do not open it with `file://`. The server must allow local `node_modules` files to be served. No demo server is started automatically.
