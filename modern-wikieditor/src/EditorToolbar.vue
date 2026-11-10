@@ -41,29 +41,21 @@
 					</template>
 				</template>
 			</div>
-			<div
+			<cdx-toggle-button-group
+				:model-value="activePanel ? [ activePanel ] : []"
+				:buttons="panelButtons"
 				role="group"
 				:aria-label="host.msg( 'wikieditor-toolbar' )"
-				data-keyboard-group>
-				<cdx-toggle-button
-					v-for="name in panels"
-					:key="name"
-					type="button"
-					:quiet="true"
-					:model-value="activePanel === name"
-					:data-panel="name"
-					:aria-expanded="activePanel === name"
-					:aria-controls="`${toolbarId}-${name}`"
-					@update:model-value="emit( 'panel', name )"
-				>
-					{{ panelLabel( name ) }}
+				@update:model-value="selectPanel">
+				<template #default="{ button, selected }">
+					<span :data-panel="button.value">{{ button.label }}</span>
 					<cdx-icon
-						:icon="activePanel === name ? cdxIconUpTriangle : cdxIconDownTriangle"
+						:icon="selected ? cdxIconUpTriangle : cdxIconDownTriangle"
 						:dir="host.direction"
 						:lang="host.language"
 					/>
-				</cdx-toggle-button>
-			</div>
+				</template>
+			</cdx-toggle-button-group>
 		</div>
 		<section
 			:id="`${toolbarId}-advanced`"
@@ -186,7 +178,7 @@
 
 <script setup lang="ts">
 import {computed, nextTick, ref, useId, watch} from 'vue';
-import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTable, CdxTabs, CdxToggleButton} from '@wikimedia/codex';
+import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTable, CdxTabs, CdxToggleButtonGroup} from '@wikimedia/codex';
 import {cdxIconDownTriangle, cdxIconUpTriangle} from '@wikimedia/codex-icons';
 import type {EditorHost, PanelName, ToolDefinition} from './types';
 import {getBuiltinIcon, LOCAL_CHARACTERS} from './tools';
@@ -211,6 +203,17 @@ const panels: readonly PanelName[] = [
 	'characters',
 	'help'
 ];
+const panelButtons = computed(() => panels.map((name) => ({value: name, label: panelLabel(name)})));
+
+// Array mode permits deselection; controlled state still allows only one open panel.
+function selectPanel(value: string | number | null | (string | number)[]): void {
+	if (!Array.isArray(value)) return;
+	const next = panels.find((name) => value.includes(name) && name !== props.activePanel);
+	if (next) emit('panel', next);
+	else if (props.activePanel && !value.includes(props.activePanel))
+		emit('panel', props.activePanel);
+}
+
 const characterPage = ref('0');
 const helpPage = ref('format');
 const helpColumns = computed(() => [
@@ -271,7 +274,7 @@ function selectHeading(value: string | number | null): void {
 }
 
 function focusPanelButton(name: PanelName): void {
-	root.value?.querySelector<HTMLButtonElement>(`button[data-panel="${name}"]`)?.focus();
+	root.value?.querySelector(`[data-panel="${name}"]`)?.closest('button')?.focus();
 }
 
 watch(() => props.activePanel, (next, previous) => {
