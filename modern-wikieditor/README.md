@@ -112,7 +112,13 @@ npm pack --dry-run
 npm publish
 ```
 
-`pnpm run dev` starts the optional Vite SFC demo (`demo.html`), not the library build. The demo uses real SFC compilation, no import map/CDN. `build:demo` writes `demo-dist`; the npm allowlist excludes demo and source files. It demonstrates v-model, lifecycle, disabled/read-only, direction and intentional stub errors. It has no service backend or renderer.
+The demo uses real SFC compilation, no import map/CDN. Choose one of these modes:
+
+- **Static HTTP server:** run `pnpm run build:demo`, then serve this directory and open `demo.html`. This page loads compiled `demo-dist/assets/demo.js` and `demo.css`, never raw TypeScript. Keep `demo-dist` alongside the page. Relative asset URLs support serving the directory under a URL subpath. Do not use `file://`.
+- **Vite development:** run `pnpm run dev` and open `/demo/index.html` on the URL printed by Vite. This separate source entry lets Vite compile `.ts` and `.vue` files. Do not serve `demo/index.html` using an ordinary static server.
+- **Built standalone demo:** serve `demo-dist` and open `/demo/index.html` within that output directory.
+
+`build:demo` writes only `demo-dist`, not the library `dist`. The npm allowlist excludes demo and source files. The demo demonstrates v-model, lifecycle, disabled/read-only, direction and intentional stub errors. It has no service backend or renderer.
 
 Codex 2.7.0 declares Node >=24.14.1 (and npm >=11.11.0 in its own package metadata); use a supported Node release for development/publication. This package follows that Node floor. The browser library requires Vue ^3.5.13.
 
