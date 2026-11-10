@@ -166,8 +166,11 @@
 						<template #item-syntax="{ item }">
 							<code class="modern-wikieditor-help-syntax">{{ item }}</code>
 						</template>
-						<template #item-result="{ item }">
-							<span class="modern-wikieditor-help-result">{{ item }}</span>
+						<template #item-result="{ item, row }">
+							<help-result
+								:id="String( row.id )"
+								:text="String( item )"
+								:syntax="String( row.syntax )" />
 						</template>
 					</cdx-table>
 				</cdx-tab>
@@ -182,6 +185,7 @@ import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTable, CdxTabs, CdxToggleButto
 import {cdxIconDownTriangle, cdxIconUpTriangle} from '@wikimedia/codex-icons';
 import type {EditorHost, PanelName, ToolDefinition} from './types';
 import {getBuiltinIcon, LOCAL_CHARACTERS} from './tools';
+import HelpResult from './HelpResult.vue';
 
 defineOptions({name: 'EditorToolbar'});
 const props = defineProps<{
@@ -320,7 +324,7 @@ interface HelpRow {
 	result: string;
 }
 
-/** Only interpolate text: neither translated examples nor Wikitext become HTML. */
+/** Structured examples use safe Vue templates; catalog HTML is never executed. */
 const helpPages = computed(() => {
 	const host = props.host;
 	const msg = (key: string, ...params: (string | number)[]): string =>
@@ -369,7 +373,7 @@ const helpPages = computed(() => {
 		{
 			id: 'file',
 			syntax: msg('content-file-syntax', host.options.fileNamespace ?? 'File', host.magicWords.thumbnail, caption),
-			result: `▧\n${caption}`
+			result: caption
 		}
 	]);
 	const namespaces = [
@@ -380,7 +384,7 @@ const helpPages = computed(() => {
 	const discussion = ['signaturetimestamp', 'signature'].map((id) => ({
 		id,
 		syntax: msg(`content-${id}-syntax`),
-		result: plain(msg(`content-${id}-example`, ...namespaces))
+		result: msg(`content-${id}-example`, ...namespaces)
 	}));
 	const indent = [
 		1,
@@ -390,7 +394,7 @@ const helpPages = computed(() => {
 	discussion.push({
 		id: 'indent',
 		syntax: `${indent[0]}\n:${indent[1]}\n::${indent[2]}`,
-		result: `${indent[0]}\n  ${indent[1]}\n    ${indent[2]}`
+		result: indent.join('\n')
 	});
 	page('discussion', discussion);
 	return pages;
