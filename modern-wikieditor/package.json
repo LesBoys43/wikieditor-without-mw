@@ -1,6 +1,6 @@
 {
   "name": "modern-wikieditor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A modern Vue rewrite of WikiEditor — frontend-only, a drop-in replacement for legacy wikieditor-vue.",
   "repository": "github:LesBoys43/wikieditor-without-mw",
   "license": "GPL-2.0-or-later",
