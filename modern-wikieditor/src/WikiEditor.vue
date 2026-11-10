@@ -34,12 +34,12 @@
 		<div
 			v-if="host?.options.services?.renderPreview"
 			class="modern-wikieditor__preview-controls">
-			<cdx-button
+			<cdx-toggle-button
 				type="button"
-				:aria-pressed="previewEnabled"
-				@click="togglePreview">
+				:model-value="previewEnabled"
+				@update:model-value="togglePreview">
 				{{ host.msg( 'wikieditor-realtimepreview-preview' ) }}
-			</cdx-button>
+			</cdx-toggle-button>
 		</div>
 		<section
 			v-if="host && previewEnabled"
@@ -66,7 +66,7 @@
 <script lang="ts">
 import {defineComponent, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
 import type {PropType, TextareaHTMLAttributes} from 'vue';
-import {CdxButton} from '@wikimedia/codex';
+import {CdxToggleButton} from '@wikimedia/codex';
 import {WikiEditorEngine} from './engine';
 import EditorToolbar from './EditorToolbar.vue';
 import EditorDialog from './EditorDialog.vue';
@@ -75,7 +75,7 @@ import type {DialogName, PanelName, ToolDefinition, WikiEditorComponentOptions, 
 
 export default defineComponent({
 	name: 'WikiEditor',
-	components: {CdxButton, EditorToolbar, EditorDialog},
+	components: {CdxToggleButton, EditorToolbar, EditorDialog},
 	inheritAttrs: false,
 	props: {
 		modelValue: {type: String, default: ''},
@@ -320,8 +320,8 @@ export default defineComponent({
 			}
 		}
 
-		function togglePreview(): void {
-			previewEnabled.value = !previewEnabled.value;
+		function togglePreview(enabled: boolean): void {
+			previewEnabled.value = enabled;
 			invalidatePreview();
 			host.value?.setPreference('preview', previewEnabled.value);
 			if (previewEnabled.value) refreshPreview().catch(report);
