@@ -167,32 +167,22 @@
 					:key="page.id"
 					:name="page.id"
 					:label="page.label">
-					<table class="modern-wikieditor-help-table" :aria-label="page.label">
-						<thead>
-							<tr>
-								<th scope="col">
-									{{ host.msg( 'wikieditor-toolbar-help-heading-description' ) }}
-								</th>
-								<th scope="col">
-									{{ host.msg( 'wikieditor-toolbar-help-heading-syntax' ) }}
-								</th>
-								<th scope="col">
-									{{ host.msg( 'wikieditor-toolbar-help-heading-result' ) }}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="row in page.rows" :key="row.id">
-								<th scope="row">
-									{{ helpDescription( row.id ) }}
-								</th>
-								<td><code>{{ row.syntax }}</code></td>
-								<td class="modern-wikieditor-help-result">
-									{{ row.result }}
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					<cdx-table
+						:caption="page.label"
+						:hide-caption="true"
+						:columns="helpColumns"
+						:data="page.rows"
+						:use-row-headers="true">
+						<template #item-id="{ item }">
+							{{ helpDescription( String( item ) ) }}
+						</template>
+						<template #item-syntax="{ item }">
+							<code class="modern-wikieditor-help-syntax">{{ item }}</code>
+						</template>
+						<template #item-result="{ item }">
+							<span class="modern-wikieditor-help-result">{{ item }}</span>
+						</template>
+					</cdx-table>
 				</cdx-tab>
 			</cdx-tabs>
 		</section>
@@ -201,7 +191,7 @@
 
 <script setup lang="ts">
 import {computed, nextTick, ref, useId, watch} from 'vue';
-import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTabs, CdxToggleButton} from '@wikimedia/codex';
+import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTable, CdxTabs, CdxToggleButton} from '@wikimedia/codex';
 import {cdxIconDownTriangle, cdxIconUpTriangle} from '@wikimedia/codex-icons';
 import type {EditorHost, PanelName, ToolDefinition} from './types';
 import {getBuiltinIcon, LOCAL_CHARACTERS} from './tools';
@@ -228,6 +218,11 @@ const panels: readonly PanelName[] = [
 ];
 const characterPage = ref(0);
 const helpPage = ref('format');
+const helpColumns = computed(() => [
+	{id: 'id', label: props.host.msg('wikieditor-toolbar-help-heading-description')},
+	{id: 'syntax', label: props.host.msg('wikieditor-toolbar-help-heading-syntax')},
+	{id: 'result', label: props.host.msg('wikieditor-toolbar-help-heading-result')}
+]);
 const headingValue = ref<string | number | null>(null);
 const characters = computed(() => props.host.options.characterGroups ?? LOCAL_CHARACTERS);
 const currentCharacters = computed(() =>
@@ -439,20 +434,7 @@ const helpPages = computed(() => {
 	min-width: 2.75rem;
 }
 
-.modern-wikieditor-help-table {
-	width: 100%;
-	border-collapse: collapse;
-}
-
-.modern-wikieditor-help-table th,
-.modern-wikieditor-help-table td {
-	padding: 0.5rem;
-	text-align: start;
-	vertical-align: top;
-	overflow-wrap: anywhere;
-}
-
-.modern-wikieditor-help-table code,
+.modern-wikieditor-help-syntax,
 .modern-wikieditor-help-result {
 	white-space: pre-wrap;
 }
