@@ -1,0 +1,47 @@
+.modern-wikieditor {
+	color: var(--color-base, #202122);
+	background: var(--background-color-base, #fff);
+	border: 1px solid var(--border-color-base, #a2a9b1);
+	border-radius: 8px;
+	font-family: sans-serif;
+	min-inline-size: 0;
+}
+.modern-wikieditor-toolbar { padding: 8px; border-block-end: 1px solid var(--border-color-subtle, #c8ccd1); }
+.modern-wikieditor__toolbar-top, .modern-wikieditor__tools, .modern-wikieditor__tabs, .modern-wikieditor__group {
+	display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+}
+.modern-wikieditor__toolbar-top { justify-content: space-between; gap: 8px; }
+.modern-wikieditor__panel { padding-block-start: 12px; }
+.modern-wikieditor__characters { display: flex; flex-wrap: wrap; gap: 4px; padding-block: 8px; }
+.modern-wikieditor__help { overflow-x: auto; }
+.modern-wikieditor__help table { border-collapse: collapse; inline-size: 100%; }
+.modern-wikieditor__help th, .modern-wikieditor__help td { padding: 8px; text-align: start; border-block-end: 1px solid var(--border-color-subtle, #c8ccd1); }
+.modern-wikieditor__help code { white-space: pre-wrap; }
+.modern-wikieditor__input { display: flow-root; }
+.modern-wikieditor__textarea {
+	box-sizing: border-box;
+	display: block;
+	inline-size: 100%;
+	min-block-size: 100px;
+	margin: 0;
+	padding: 16px;
+	border: 0;
+	border-radius: 0;
+	background: var(--background-color-base, #fff);
+	color: var(--color-base, #202122);
+	font: 14px/1.6 monospace;
+	tab-size: 4;
+}
+.modern-wikieditor__textarea:focus-visible { outline: 2px solid var(--color-progressive, #36c); outline-offset: -2px; }
+.modern-wikieditor__textarea:disabled { background: var(--background-color-disabled, #eaecf0); color: var(--color-disabled, #72777d); }
+.modern-wikieditor__resizer { block-size: 10px; cursor: ns-resize; touch-action: none; border-block-start: 1px solid var(--border-color-subtle, #c8ccd1); }
+.modern-wikieditor__resizer:focus-visible { outline: 2px solid var(--color-progressive, #36c); }
+.modern-wikieditor__preview-controls { padding: 8px; }
+.modern-wikieditor__preview { padding: 16px; border-block-start: 1px solid var(--border-color-subtle, #c8ccd1); overflow-wrap: anywhere; }
+.modern-wikieditor-dialog__form { display: grid; gap: 16px; }
+.modern-wikieditor-dialog__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.modern-wikieditor-dialog__status { white-space: pre-wrap; }
+@media (max-width: 640px) {
+	.modern-wikieditor__textarea { padding: 12px; }
+	.modern-wikieditor-dialog__actions { flex-direction: column; }
+}
