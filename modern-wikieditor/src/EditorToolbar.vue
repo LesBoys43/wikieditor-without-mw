@@ -45,18 +45,24 @@
 				role="group"
 				:aria-label="host.msg( 'wikieditor-toolbar' )"
 				data-keyboard-group>
-				<cdx-button
+				<cdx-toggle-button
 					v-for="name in panels"
 					:key="name"
 					type="button"
-					weight="quiet"
+					:quiet="true"
+					:model-value="activePanel === name"
 					:data-panel="name"
 					:aria-expanded="activePanel === name"
 					:aria-controls="`${toolbarId}-${name}`"
-					@click="emit( 'panel', name )"
+					@update:model-value="emit( 'panel', name )"
 				>
 					{{ panelLabel( name ) }}
-				</cdx-button>
+					<cdx-icon
+						:icon="activePanel === name ? cdxIconUpTriangle : cdxIconDownTriangle"
+						:dir="host.direction"
+						:lang="host.language"
+					/>
+				</cdx-toggle-button>
 			</div>
 		</div>
 		<section
@@ -205,7 +211,8 @@
 
 <script setup lang="ts">
 import {computed, nextTick, ref, useId, watch} from 'vue';
-import {CdxButton, CdxIcon, CdxSelect} from '@wikimedia/codex';
+import {CdxButton, CdxIcon, CdxSelect, CdxToggleButton} from '@wikimedia/codex';
+import {cdxIconDownTriangle, cdxIconUpTriangle} from '@wikimedia/codex-icons';
 import type {EditorHost, PanelName, ToolDefinition} from './types';
 import {getBuiltinIcon, LOCAL_CHARACTERS} from './tools';
 
