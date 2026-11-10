@@ -161,57 +161,47 @@
 			role="region"
 			:aria-label="panelLabel( 'help' )"
 			class="modern-wikieditor-panel">
-			<div
-				class="modern-wikieditor-booklet-nav"
-				role="group"
-				:aria-label="panelLabel( 'help' )"
-				data-keyboard-group>
-				<cdx-button
+			<cdx-tabs v-model:active="helpPage" :framed="true">
+				<cdx-tab
 					v-for="page in helpPages"
 					:key="page.id"
-					type="button"
-					weight="quiet"
-					:aria-pressed="helpPage === page.id"
-					@click="helpPage = page.id">
-					{{ page.label }}
-				</cdx-button>
-			</div>
-			<table
-				v-if="currentHelp"
-				class="modern-wikieditor-help-table"
-				:aria-label="currentHelp.label">
-				<thead>
-					<tr>
-						<th scope="col">
-							{{ host.msg( 'wikieditor-toolbar-help-heading-description' ) }}
-						</th>
-						<th scope="col">
-							{{ host.msg( 'wikieditor-toolbar-help-heading-syntax' ) }}
-						</th>
-						<th scope="col">
-							{{ host.msg( 'wikieditor-toolbar-help-heading-result' ) }}
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="row in currentHelp.rows" :key="row.id">
-						<th scope="row">
-							{{ helpDescription( row.id ) }}
-						</th>
-						<td><code>{{ row.syntax }}</code></td>
-						<td class="modern-wikieditor-help-result">
-							{{ row.result }}
-						</td>
-					</tr>
-				</tbody>
-			</table>
+					:name="page.id"
+					:label="page.label">
+					<table class="modern-wikieditor-help-table" :aria-label="page.label">
+						<thead>
+							<tr>
+								<th scope="col">
+									{{ host.msg( 'wikieditor-toolbar-help-heading-description' ) }}
+								</th>
+								<th scope="col">
+									{{ host.msg( 'wikieditor-toolbar-help-heading-syntax' ) }}
+								</th>
+								<th scope="col">
+									{{ host.msg( 'wikieditor-toolbar-help-heading-result' ) }}
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="row in page.rows" :key="row.id">
+								<th scope="row">
+									{{ helpDescription( row.id ) }}
+								</th>
+								<td><code>{{ row.syntax }}</code></td>
+								<td class="modern-wikieditor-help-result">
+									{{ row.result }}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</cdx-tab>
+			</cdx-tabs>
 		</section>
 	</div>
 </template>
 
 <script setup lang="ts">
 import {computed, nextTick, ref, useId, watch} from 'vue';
-import {CdxButton, CdxIcon, CdxSelect, CdxToggleButton} from '@wikimedia/codex';
+import {CdxButton, CdxIcon, CdxSelect, CdxTab, CdxTabs, CdxToggleButton} from '@wikimedia/codex';
 import {cdxIconDownTriangle, cdxIconUpTriangle} from '@wikimedia/codex-icons';
 import type {EditorHost, PanelName, ToolDefinition} from './types';
 import {getBuiltinIcon, LOCAL_CHARACTERS} from './tools';
@@ -414,8 +404,6 @@ const helpPages = computed(() => {
 	page('discussion', discussion);
 	return pages;
 });
-const currentHelp = computed(() =>
-	helpPages.value.find((page) => page.id === helpPage.value) ?? helpPages.value[0]);
 </script>
 
 <style scoped>
