@@ -111,11 +111,24 @@ export class DialogManager {
 		root.tabIndex = -1;
 		root.setAttribute('role', 'dialog');
 		root.setAttribute('aria-modal', 'true');
+		const header = this.document.createElement('header');
+		header.className = 'wikiEditor-dialog-header';
 		const heading = this.document.createElement('h2');
 		heading.className = 'wikiEditor-dialog-title';
 		heading.id = `wikiEditor-dialog-title-${++nextDialogId}`;
 		heading.textContent = this.message(`wikieditor-toolbar-tool-${name}-title`);
 		root.setAttribute('aria-labelledby', heading.id);
+		const closeButton = this.document.createElement('button');
+		closeButton.type = 'button';
+		closeButton.className = 'wikiEditor-dialog-close';
+		closeButton.setAttribute('aria-label', this.message('wikieditor-toolbar-tool-replace-close'));
+		closeButton.title = this.message('wikieditor-toolbar-tool-replace-close');
+		const closeSymbol = this.document.createElement('span');
+		closeSymbol.setAttribute('aria-hidden', 'true');
+		closeSymbol.textContent = '×';
+		closeButton.append(closeSymbol);
+		closeButton.addEventListener('click', () => this.close());
+		header.append(heading, closeButton);
 		const form = this.document.createElement('form');
 		form.className = 'wikiEditor-dialog-form';
 		form.noValidate = true;
@@ -133,7 +146,7 @@ export class DialogManager {
 		const footer = this.document.createElement('div');
 		footer.className = 'wikiEditor-dialog-actions';
 		form.append(body, error, status, footer);
-		root.append(heading, form);
+		root.append(header, form);
 		const focused = this.document.activeElement;
 		const state: DialogState = {
 			root,

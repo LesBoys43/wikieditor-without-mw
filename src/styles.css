@@ -198,9 +198,45 @@
 	overflow: auto;
 }
 .wikiEditor .wikiEditor-dialog::backdrop { background: rgb(0 0 0 / 35%); }
-.wikiEditor .wikiEditor-dialog form { display: grid; gap: 12px; margin: 0; padding: 20px; }
-.wikiEditor .wikiEditor-dialog h2, .wikiEditor .wikiEditor-dialog h3 { margin: 0 0 4px; font-size: 20px; font-weight: normal; }
-.wikiEditor .wikiEditor-dialog label { display: grid; gap: 4px; font-weight: bold; }
+/* Keep title, content and actions aligned, independently of host heading styles. */
+.wikiEditor .wikiEditor-dialog-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 20px;
+	border-block-end: 1px solid #c8ccd1;
+	background: #f8f9fa;
+}
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-title {
+	flex: 1;
+	min-inline-size: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	color: inherit;
+	background: transparent;
+	font: 600 18px/1.4 sans-serif;
+	text-align: start;
+	text-transform: none;
+	letter-spacing: normal;
+	overflow-wrap: anywhere;
+}
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-form {
+	display: grid;
+	gap: 16px;
+	margin: 0;
+	padding: 20px;
+}
+.wikiEditor .wikiEditor-dialog-body { display: grid; gap: 16px; min-inline-size: 0; }
+.wikiEditor .wikiEditor-dialog label { display: grid; gap: 6px; min-inline-size: 0; font-weight: bold; }
+.wikiEditor .wikiEditor-dialog .wikiEditor-field-help {
+	margin: -8px 0 0;
+	color: #54595d;
+	font-size: 13px;
+	white-space: pre-line;
+}
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-status { margin: 0; }
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-status:empty { display: none; }
 .wikiEditor .wikiEditor-dialog input:not([type="checkbox"]):not([type="radio"]),
 .wikiEditor .wikiEditor-dialog select, .wikiEditor .wikiEditor-dialog textarea {
 	inline-size: 100%;
@@ -233,7 +269,30 @@
 .wikiEditor .wikiEditor-dialog button:hover, .wikiEditor .wikiEditor-preview-toggle:hover { background: #fff; border-color: #72777d; }
 .wikiEditor .wikiEditor-dialog button[type="submit"], .wikiEditor .wikiEditor-dialog .wikiEditor-primary { border-color: #36c; color: #fff; background: #36c; }
 .wikiEditor .wikiEditor-dialog button[type="submit"]:hover, .wikiEditor .wikiEditor-dialog .wikiEditor-primary:hover { border-color: #447ff5; background: #447ff5; }
-.wikiEditor .wikiEditor-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-block-start: 8px; }
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-close {
+	display: inline-flex;
+	flex: 0 0 32px;
+	align-items: center;
+	justify-content: center;
+	inline-size: 32px;
+	block-size: 32px;
+	min-block-size: 32px;
+	padding: 0;
+	border-color: transparent;
+	background: transparent;
+	font: 24px/1 sans-serif;
+}
+.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-close:hover { border-color: #a2a9b1; background: #eaecf0; }
+.wikiEditor .wikiEditor-dialog-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+	margin: 4px -20px -20px;
+	padding: 16px 20px;
+	border-block-start: 1px solid #c8ccd1;
+	background: #f8f9fa;
+}
 .wikiEditor .wikiEditor-dialog-help, .wikiEditor .wikiEditor-dialog small { color: #54595d; font-size: 13px; font-weight: normal; white-space: pre-line; }
 .wikiEditor .wikiEditor-dialog [role="status"] { color: #54595d; }
 .wikiEditor .wikiEditor-suggestions { max-block-size: 180px; margin: 0; padding: 0; border: 1px solid #a2a9b1; list-style: none; overflow: auto; }
@@ -257,7 +316,10 @@
 	.wikiEditor .wikiEditor-booklet-page { padding-inline: 7px; }
 	.wikiEditor .wikiEditor-booklet-body { padding: 5px; }
 	.wikiEditor .wikiEditor-help-table { min-inline-size: 400px; }
-	.wikiEditor .wikiEditor-dialog form { padding: 14px; }
+	.wikiEditor .wikiEditor-dialog-header { padding: 10px 14px; }
+	.wikiEditor .wikiEditor-dialog .wikiEditor-dialog-form { padding: 14px; }
+	.wikiEditor .wikiEditor-dialog-actions { margin: 4px -14px -14px; padding: 12px 14px; }
+	.wikiEditor .wikiEditor-dialog-actions button { flex: 1 1 auto; }
 }
 @media (forced-colors: active) {
 	.wikiEditor .wikiEditor-tool, .wikiEditor .wikiEditor-character { border-color: ButtonText; }
