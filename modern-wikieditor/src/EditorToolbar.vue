@@ -156,7 +156,7 @@
 			role="region"
 			:aria-label="panelLabel( 'help' )"
 			class="modern-wikieditor-panel">
-			<cdx-tabs v-model:active="helpPage" :framed="true">
+			<cdx-tabs v-model:active="helpPage" :framed="false">
 				<cdx-tab
 					v-for="page in helpPages"
 					:key="page.id"
