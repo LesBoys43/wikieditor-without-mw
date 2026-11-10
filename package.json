@@ -1,6 +1,6 @@
 {
   "name": "wikieditor-without-mw",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "repository": "github:LesBoys43/wikieditor-without-mw",
   "description": "This package allows you to use WikiEditor without the entire MediaWiki. It is the official successor to my old project, independ-wikieditor (though the code is unrelated to it, and independ-wikieditor is now archived), and it was coded using GPT-6.1 Sol.",
   "license": "GPL-2.0-or-later",
