@@ -120,39 +120,34 @@
 			role="region"
 			:aria-label="panelLabel( 'characters' )"
 			class="modern-wikieditor-panel">
-			<div
-				class="modern-wikieditor-booklet-nav"
-				role="group"
-				:aria-label="panelLabel( 'characters' )"
-				data-keyboard-group>
-				<cdx-button
-					v-for="( group, index ) in characters"
-					:key="index"
-					type="button"
-					weight="quiet"
-					:aria-pressed="currentCharacters === group"
-					@click="characterPage = index">
-					{{ group.label }}
-				</cdx-button>
-			</div>
-			<div
-				v-if="currentCharacters"
-				class="modern-wikieditor-character-grid"
-				role="group"
-				:aria-label="currentCharacters.label"
-				data-keyboard-group>
-				<cdx-button
-					v-for="( character, index ) in currentCharacters.characters"
-					:key="index"
-					class="modern-wikieditor-character"
-					type="button"
-					weight="quiet"
-					:disabled="disabled"
-					:title="character"
-					@click="emit( 'insert', character )">
-					{{ character }}
-				</cdx-button>
-			</div>
+			<cdx-tabs
+				v-if="characters.length"
+				v-model:active="characterPage"
+				:framed="false">
+				<cdx-tab
+					v-for="( group, groupIndex ) in characters"
+					:key="groupIndex"
+					:name="String( groupIndex )"
+					:label="group.label">
+					<div
+						class="modern-wikieditor-character-grid"
+						role="group"
+						:aria-label="group.label"
+						data-keyboard-group>
+						<cdx-button
+							v-for="( character, index ) in group.characters"
+							:key="index"
+							class="modern-wikieditor-character"
+							type="button"
+							weight="quiet"
+							:disabled="disabled"
+							:title="character"
+							@click="emit( 'insert', character )">
+							{{ character }}
+						</cdx-button>
+					</div>
+				</cdx-tab>
+			</cdx-tabs>
 		</section>
 		<section
 			:id="`${toolbarId}-help`"
@@ -216,7 +211,7 @@ const panels: readonly PanelName[] = [
 	'characters',
 	'help'
 ];
-const characterPage = ref(0);
+const characterPage = ref('0');
 const helpPage = ref('format');
 const helpColumns = computed(() => [
 	{id: 'id', label: props.host.msg('wikieditor-toolbar-help-heading-description')},
@@ -225,8 +220,6 @@ const helpColumns = computed(() => [
 ]);
 const headingValue = ref<string | number | null>(null);
 const characters = computed(() => props.host.options.characterGroups ?? LOCAL_CHARACTERS);
-const currentCharacters = computed(() =>
-	characters.value[characterPage.value] ?? characters.value[0]);
 const headingItems = computed(() => [
 	2,
 	3,
