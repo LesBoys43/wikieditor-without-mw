@@ -122,6 +122,10 @@ Other options include:
 
 The toolbar retains the official feature organization and Wikitext actions with a Wikimedia-inspired style. Native controls and locally vendored Codex SVG icons replace the OOUI widgets/icons. The SVG files are copied verbatim, without adding a Codex dependency, and retain their MIT license (see NOTICE.md). Custom tool `icon` values remain plain text. Importing `styles.css` also loads its relative icon stylesheet and SVG assets; preserve these relative paths when hosting the build. It is not pixel-identical to upstream; old jQuery extension configuration is not supported.
 
+## Modern Vue rewrite
+
+[`modern-wikieditor`](./modern-wikieditor/README.md) is an independent TypeScript + Vite + Wikimedia Codex Vue SFC package. It retains the legacy Vue component contract with explicit exceptions: `getEditor()` always throws, `ready()` has no payload, and Vue ^3.5.13 is required. See its README for migration, styles, services and publication instructions.
+
 ## Development and publication
 
 ```sh

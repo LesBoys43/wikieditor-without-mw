@@ -2,3 +2,4 @@ node_modules/
 .pnpm-store/
 dist/
 *.tgz
+modern-wikieditor/demo-dist/

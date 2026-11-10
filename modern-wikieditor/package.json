@@ -1,0 +1,45 @@
+{
+  "name": "modern-wikieditor",
+  "version": "0.1.0",
+  "description": "A modern Vue rewrite of WikiEditor — frontend-only, a drop-in replacement for legacy wikieditor-vue.",
+  "repository": "github:LesBoys43/wikieditor-without-mw",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"},
+    "./min": {"types": "./dist/index.d.ts", "import": "./dist/index.min.js"},
+    "./styles.css": "./dist/styles.css",
+    "./styles-rtl.css": "./dist/styles-rtl.css",
+    "./styles-bidi.css": "./dist/styles-bidi.css",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "COPYING", "NOTICE.md", "README.md"],
+  "sideEffects": ["**/*.css"],
+  "engines": {"node": ">=24.14.1"},
+  "scripts": {
+    "build": "vite build && vite build --mode min && pnpm run build:types && node scripts/copy-assets.mjs",
+    "build:types": "vue-tsc --declaration --emitDeclarationOnly --noEmit false --outDir dist",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint src --ext .ts,.vue",
+    "lint:fix": "eslint src --ext .ts,.vue --fix",
+    "prepack": "pnpm run lint && pnpm run typecheck && pnpm run build",
+    "dev": "vite --config vite.demo.config.ts",
+    "build:demo": "vite build --config vite.demo.config.ts"
+  },
+  "dependencies": {"@wikimedia/codex": "2.7.0", "@wikimedia/codex-icons": "2.7.0"},
+  "peerDependencies": {"vue": "^3.5.13"},
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.72.0",
+    "eslint": "^8.57.0",
+    "eslint-config-wikimedia": "^0.32.6",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^7.3.7",
+    "vue-tsc": "^3.0.0",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.13",
+    "vue-eslint-parser": "^10.4.1"
+  },
+  "keywords": ["wikieditor", "wikitext", "vue", "vue3", "vue-component", "codex", "wikimedia", "mediawiki", "frontend-only", "standalone", "editor", "textarea", "typescript"]
+}

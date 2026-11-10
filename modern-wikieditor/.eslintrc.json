@@ -1,0 +1,103 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "overrides": [
+        {
+            "files": [
+                "**/*.vue"
+            ],
+            "parser": "vue-eslint-parser",
+            "parserOptions": {
+                "parser": "@typescript-eslint/parser",
+                "sourceType": "module"
+            },
+            "rules": {
+                "vue/component-name-in-template-casing": [
+                    "error",
+                    "kebab-case"
+                ],
+                "vue/multi-word-component-names": "off"
+            }
+        }
+    ],
+    "env": {
+        "node": true,
+        "browser": true
+    },
+    "extends": [
+        "./node_modules/eslint-config-wikimedia/client.json"
+    ],
+    "rules": {
+        "space-in-parens": [
+            "error",
+            "never"
+        ],
+        "array-bracket-spacing": [
+            "error",
+            "never"
+        ],
+        "object-curly-spacing": [
+            "error",
+            "never"
+        ],
+        "computed-property-spacing": [
+            "error",
+            "never"
+        ],
+        "template-curly-spacing": [
+            "error",
+            "never"
+        ],
+        "es-x/no-dynamic-import": "off",
+        "es-x/no-optional-chaining": "off",
+        "es-x/no-nullish-coalescing-operators": "off",
+        "es-x/no-top-level-await": "off",
+        "es-x/no-import-meta": "off",
+        "es-x/no-class-instance-fields": "off",
+        "es-x/no-string-prototype-replaceall": "off",
+        "@typescript-eslint/no-this-alias": [
+            "error",
+            {
+                "allowedNames": [
+                    "self"
+                ]
+            }
+        ],
+        "curly": [
+            "error",
+            "multi"
+        ],
+        "array-element-newline": [
+            "error",
+            {
+                "minItems": 3,
+                "multiline": true
+            }
+        ],
+        "array-bracket-newline": [
+            "error",
+            {
+                "multiline": true
+            }
+        ],
+        "object-property-newline": [
+            "error",
+            {
+                "allowAllPropertiesOnSameLine": true
+            }
+        ],
+        "object-curly-newline": [
+            "error",
+            {
+                "multiline": true
+            }
+        ],
+        "no-script-url": "off",
+        "no-console": "off",
+        "implicit-arrow-linebreak": "off",
+        "no-return-assign": "off"
+    }
+}
