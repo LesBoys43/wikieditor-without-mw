@@ -33,7 +33,7 @@
     "prepack": "pnpm run typecheck && pnpm run build"
   },
   "dependencies": {
-    "wikieditor-without-mw": "^0.1.0"
+    "wikieditor-without-mw": "^0.2.0"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
